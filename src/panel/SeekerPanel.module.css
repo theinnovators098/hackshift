@@ -1,0 +1,21 @@
+.invite {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid #b9dcc6;
+  border-radius: var(--r-control);
+  background: var(--leaf-wash);
+}
+
+.inviteHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+}
+
+.inviteForm {
+  display: flex;
+  gap: 8px;
+}

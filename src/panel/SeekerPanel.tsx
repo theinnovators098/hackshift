@@ -1,7 +1,11 @@
+import { useState } from 'react'
 import { Link, Navigate, Route, Routes } from 'react-router-dom'
-import { Bell, Bookmark, CalendarDays, Compass, LayoutDashboard, Lightbulb, Send, UserCog, UserRound, Zap } from 'lucide-react'
+import { Bell, Bookmark, CalendarCheck, CalendarDays, Compass, LayoutDashboard, Lightbulb, Send, UserCog, UserRound, Zap } from 'lucide-react'
 import { toParams } from '../lib/jobs'
+import Calendar from './Calendar'
 import CareerPlan from './CareerPlan'
+import { interviewTime } from './hiring'
+import own from './SeekerPanel.module.css'
 import ProfileEditor from './ProfileEditor'
 import ResumePage from './ResumePage'
 import Dashboard from '../pages/Dashboard'
@@ -12,11 +16,60 @@ import PanelShell from './PanelShell'
 import { Empty, PanelHead, Section, Status, panelStyles as styles } from './ui'
 
 const nextStep: Record<ApplicationStatus, string> = {
-  Sent: 'Waiting for the startup to read it. Most reply within a week.',
+  Applied: 'Sent. Most startups reply within a week.',
+  'Under review': 'Someone at the company is reading your application now.',
   Shortlisted: 'You are on the shortlist. Finish the linked challenge if there is one.',
   Interview: 'They want to talk. Practise the interview with Millisa before the call.',
-  Hired: 'You got it. The startup will contact you with the offer.',
-  'Not selected': 'Not this time. Ask a mentor what to change before the next one.',
+  Offer: 'They want to make you an offer. Check your messages.',
+  Hired: 'You got it. Congratulations.',
+  Rejected: 'Not this time. Ask a mentor what to change before the next one.',
+}
+
+function InterviewInvite({ id }: { id: string }) {
+  const { data, answerInterview } = useStore()
+  const [asking, setAsking] = useState(false)
+  const [reply, setReply] = useState('')
+  const a = data.applications.find((x) => x.id === id)
+  if (!a?.interview) return null
+  const iv = a.interview
+  const isLink = /^https?:\/\//.test(iv.where)
+  return (
+    <div className={own.invite}>
+      <p className={own.inviteHead}>
+        <CalendarDays size={16} aria-hidden="true" /> Interview {interviewTime(iv.when)}, {iv.mode.toLowerCase()}
+        <Status value={iv.status} />
+      </p>
+      <p className={styles.cardBody}>
+        {iv.mode === 'Video' ? 'Join here: ' : iv.mode === 'Phone' ? 'They will call: ' : 'Address: '}
+        {isLink ? (
+          <a href={iv.where} target="_blank" rel="noreferrer">
+            {iv.where}
+          </a>
+        ) : (
+          iv.where
+        )}
+      </p>
+      {iv.status === 'Proposed' &&
+        (asking ? (
+          <div className={own.inviteForm}>
+            <input className="input" value={reply} onChange={(e) => setReply(e.target.value)} placeholder="Which days and times work for you?" aria-label="Times that work for you" />
+            <button type="button" className="btn btn-primary btn-sm" disabled={!reply.trim()} onClick={() => answerInterview(a.id, false, reply.trim())}>
+              Send
+            </button>
+          </div>
+        ) : (
+          <div className={styles.cardFoot}>
+            <button type="button" className="btn btn-primary btn-sm" onClick={() => answerInterview(a.id, true, '')}>
+              Accept the time
+            </button>
+            <button type="button" className="btn btn-ghost btn-sm" onClick={() => setAsking(true)}>
+              Ask for another time
+            </button>
+          </div>
+        ))}
+      {iv.status === 'New time asked' && <p className={styles.cardSub}>You asked for another time: “{iv.reply}”. The company will send a new time.</p>}
+    </div>
+  )
 }
 
 function Applications() {
@@ -46,7 +99,11 @@ function Applications() {
                   </div>
                   <Status value={a.status} />
                 </div>
-                <p className={styles.cardBody}>{nextStep[a.status]}</p>
+                <p className={styles.cardBody}>
+                  {nextStep[a.status]}
+                  {a.status === 'Rejected' && a.rejectReason && ` Their reason: ${a.rejectReason.toLowerCase()}.`}
+                </p>
+                <InterviewInvite id={a.id} />
                 {a.note && <blockquote className={styles.quote}>{a.note}</blockquote>}
                 <div className={styles.cardFoot}>
                   {a.status === 'Interview' && (
@@ -54,7 +111,7 @@ function Applications() {
                       Practise the interview
                     </Link>
                   )}
-                  {a.status === 'Sent' && (
+                  {a.status === 'Applied' && (
                     <button type="button" className={`${styles.link} ${styles.danger}`} onClick={() => withdrawApplication(a.id)}>
                       Withdraw application
                     </button>
@@ -301,6 +358,7 @@ export default function SeekerPanel() {
     { to: '/panel/applications', label: 'Applications', icon: Send, count: moving },
     { to: '/panel/challenges', label: 'Challenges', icon: Zap },
     { to: '/panel/sessions', label: 'Mentor sessions', icon: CalendarDays },
+    { to: '/panel/calendar', label: 'Calendar', icon: CalendarCheck },
     { to: '/panel/plan', label: 'Career plan', icon: Compass },
     { to: '/panel/saved', label: 'Saved', icon: Bookmark },
     ...(founder ? [{ to: '/panel/ventures', label: 'My ventures', icon: Lightbulb }] : []),
@@ -315,6 +373,7 @@ export default function SeekerPanel() {
         <Route path="profile" element={<ProfileEditor />} />
         <Route path="resume" element={<ResumePage />} />
         <Route path="plan" element={<CareerPlan />} />
+        <Route path="calendar" element={<Calendar />} />
         <Route path="applications" element={<Applications />} />
         <Route path="challenges" element={<ChallengesDone />} />
         <Route path="sessions" element={<Sessions />} />

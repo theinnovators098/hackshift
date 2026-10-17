@@ -109,14 +109,16 @@ export default function OpportunityDetail() {
                 <CheckCircle2 size={22} aria-hidden="true" />
                 <div>
                   <p className={styles.doneTitle}>
-                    {application.status === 'Sent' ? 'Application sent' : `Application: ${application.status}`}
+                    {application.status === 'Applied' ? 'Application sent' : `Application: ${application.status}`}
                   </p>
                   <p className={styles.muted}>
-                    {application.status === 'Sent' && `Sent on ${application.appliedOn}. ${o.company} usually replies within a week.`}
+                    {application.status === 'Applied' && `Sent on ${application.appliedOn}. ${o.company} usually replies within a week.`}
+                    {application.status === 'Under review' && `${o.company} is reading your application now.`}
+                    {application.status === 'Offer' && `${o.company} wants to make you an offer. Check your messages.`}
                     {application.status === 'Shortlisted' && `${o.company} has shortlisted you. Expect a message soon.`}
                     {application.status === 'Interview' && `${o.company} wants to interview you. Practise with Millisa before the call.`}
                     {application.status === 'Hired' && `Congratulations. ${o.company} has picked you for this role.`}
-                    {application.status === 'Not selected' && `${o.company} went with someone else this time.`}
+                    {application.status === 'Rejected' && `${o.company} went with someone else this time.`}
                   </p>
                 </div>
               </div>

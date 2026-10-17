@@ -489,3 +489,111 @@ export function planRequest(profile: Profile, target: string, site: Pick<Site, '
 }
 
 export type PlanReply = Omit<CareerPlan, 'target' | 'madeOn'>
+
+export interface RoleDraft {
+  title: string
+  kind: string
+  mode: string
+  experience: string
+  city: string
+  pay: string
+  monthly: number
+  skills: string[]
+  work: string[]
+}
+
+export const roleDraftSchema = {
+  type: 'object',
+  properties: {
+    title: { type: 'string' },
+    kind: { type: 'string', enum: ['Internship', 'Job', 'Part-time', 'Apprenticeship', 'Contract', 'Gig', 'Co-founder'] },
+    mode: { type: 'string', enum: ['Remote', 'Hybrid', 'On-site'] },
+    experience: { type: 'string', enum: ['Fresher', '1-3 years', '3+ years', ''] },
+    city: { type: 'string' },
+    pay: { type: 'string', description: 'Pay as people should read it, in rupees, for example ₹18,000 / month. Empty if not given.' },
+    monthly: { type: 'integer', description: 'Monthly pay in rupees as a number, 0 if unknown or equity only' },
+    skills: list('Three to six skills'),
+    work: list('Three to five lines on what the person will actually do, each starting with a verb'),
+  },
+  required: ['title', 'kind', 'mode', 'experience', 'city', 'pay', 'monthly', 'skills', 'work'],
+}
+
+export function roleDraftRequest(instruction: string, company: string, about: string, city: string) {
+  return {
+    system: system(
+      'en',
+      `Turn a hiring manager's rough notes into a clear role listing for ${company} on HackShift.`,
+      'Use only what the notes say. If pay is not given, leave pay empty and monthly 0, never invent a number. Use plain words and no buzzwords such as rockstar or ninja.',
+      `If no city is given, use ${city || 'the company city'}.`,
+    ),
+    turns: ask(`ABOUT ${company}: ${about || 'not given'}\n\nNOTES FROM THE HIRING MANAGER:\n${instruction}`),
+    schema: roleDraftSchema,
+  }
+}
+
+export interface CandidateRead {
+  summary: string
+  strengths: string[]
+  gaps: string[]
+  ask: string[]
+}
+
+export const candidateSchema = {
+  type: 'object',
+  properties: {
+    summary: { type: 'string', description: 'Two sentences on how their background lines up with the role' },
+    strengths: list('Up to three points backed by their profile or work'),
+    gaps: list('Up to three things the profile does not show yet'),
+    ask: list('Three questions to ask them in the interview to check the gaps'),
+  },
+  required: ['summary', 'strengths', 'gaps', 'ask'],
+}
+
+export function candidateRequest(o: Opportunity, candidate: Profile, note: string, workStatus: string) {
+  return {
+    system: system(
+      'en',
+      'You help a hiring manager understand one applicant. You explain, you do not decide.',
+      'Never recommend rejecting someone, never give a score or a ranking, and never mention age, gender, religion, caste or where someone is from as a reason.',
+      'Base every point on the profile, the note and the challenge status given. If something is not shown, say it is not shown, not that it is missing from the person.',
+    ),
+    turns: ask(
+      `${roleBlock(o)}\n\nAPPLICANT\n${profileBlock(candidate)}${
+        candidate.work?.length ? `\nWork: ${candidate.work.map((w) => `${w.role} at ${w.org}: ${w.summary}`).join('; ')}` : ''
+      }${candidate.education?.length ? `\nEducation: ${candidate.education.map((e) => `${e.degree}, ${e.school}`).join('; ')}` : ''}\n\nTHEIR NOTE: ${
+        note || 'none'
+      }\nLINKED CHALLENGE: ${workStatus}`,
+    ),
+    schema: candidateSchema,
+  }
+}
+
+export type DraftPurpose = 'update' | 'interview' | 'offer' | 'rejection'
+
+export function employerMessageRequest(purpose: DraftPurpose, company: string, role: string, candidate: string, extra: string) {
+  const goals: Record<DraftPurpose, string> = {
+    update: 'Tell them where their application stands and what happens next.',
+    interview: 'Invite them to an interview. Include the time and place given.',
+    offer: 'Tell them the team wants to make an offer and ask for a time to talk through it. Do not mention salary numbers unless given.',
+    rejection: 'Tell them kindly that the team will not go ahead this time, share the reason given, and suggest one thing that would help next time.',
+  }
+  return {
+    system: system(
+      'en',
+      `Write a short direct message from ${company} to ${candidate} about the ${role} role. ${goals[purpose]}`,
+      'Warm, specific and under 90 words. No subject line and no placeholders. Sign off with the company name.',
+    ),
+    turns: ask(extra || 'No extra details.'),
+  }
+}
+
+export function pipelineRequest(rows: string[]) {
+  return {
+    system: system(
+      'en',
+      'Summarise this hiring pipeline for a busy founder in under 110 words.',
+      'Say what needs attention first, such as people waiting longest or interviews without feedback, then the next three actions as a short list. Do not judge candidates.',
+    ),
+    turns: ask(rows.join('\n') || 'No applicants yet.'),
+  }
+}

@@ -3,6 +3,7 @@ import { CalendarDays, Check, MapPin, Pencil } from 'lucide-react'
 import { roleInfo } from '../data/roles'
 import { matchChallenges, matchOpportunities, greeting } from '../lib/match'
 import { profileScore } from '../lib/profileScore'
+import { Status } from '../panel/ui'
 import { useStore } from '../store/AppStore'
 import styles from './Dashboard.module.css'
 
@@ -206,9 +207,7 @@ export default function Dashboard() {
                             {o.company}, applied {a.appliedOn}
                           </p>
                         </div>
-                        <span className={`tag ${a.status === 'Hired' || a.status === 'Interview' ? 'tag-leaf' : a.status === 'Not selected' ? 'tag-rose' : a.status === 'Shortlisted' ? 'tag-marigold' : ''}`}>
-                          {a.status}
-                        </span>
+                        <Status value={a.status} />
                       </Link>
                     </li>
                   )

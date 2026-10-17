@@ -1,6 +1,9 @@
 import { useState } from 'react'
 import { Link, Navigate, Route, Routes } from 'react-router-dom'
-import { BadgeCheck, KanbanSquare, LayoutDashboard, Search, UserCog } from 'lucide-react'
+import { BadgeCheck, Briefcase, Building2, CalendarDays, KanbanSquare, LayoutDashboard, Search, UserCog, Users } from 'lucide-react'
+import Calendar from './Calendar'
+import { ChallengeEditor, RoleEditor } from './Editors'
+import { Applicants, Company, ContentTable, HiringOverview, Submissions, useCompany } from './hiring'
 import MessageButton from '../components/MessageButton'
 import { useStore, type PipelineEntry, type PipelineStage } from '../store/AppStore'
 import AccountSettings from './AccountSettings'
@@ -26,7 +29,10 @@ function Overview() {
 
   return (
     <>
-      <PanelHead title={`Hiring for ${me.company ?? 'your team'}`} intro="Where every candidate stands, and who you are talking to this week.">
+      <PanelHead title={`Hiring for ${me.company ?? 'your team'}`} intro="People you are sourcing, and applicants to your roles.">
+        <Link to="/panel/hiring" className="btn btn-ghost btn-sm">
+          Applicants and roles
+        </Link>
         <Link to="/talent" className="btn btn-accent btn-sm">
           Find talent
         </Link>
@@ -184,10 +190,15 @@ function Pipeline() {
 
 export default function RecruiterPanel() {
   const { entries } = usePipeline()
+  const { applicants } = useCompany()
   const shared = useSharedNav('/panel')
   const nav = [
     { to: '/panel', label: 'Overview', icon: LayoutDashboard, end: true },
-    { to: '/panel/pipeline', label: 'Pipeline', icon: KanbanSquare, count: entries.filter((e) => e.stage === 'Interview').length },
+    { to: '/panel/roles', label: 'Roles', icon: Briefcase },
+    { to: '/panel/applicants', label: 'Applicants', icon: Users, count: applicants.filter((a) => a.status === 'Applied').length },
+    { to: '/panel/pipeline', label: 'Sourcing pipeline', icon: KanbanSquare, count: entries.filter((e) => e.stage === 'Interview').length },
+    { to: '/panel/calendar', label: 'Calendar', icon: CalendarDays },
+    { to: '/panel/company', label: 'Company profile', icon: Building2 },
     ...shared,
     { to: '/panel/account', label: 'Account', icon: UserCog },
   ]
@@ -195,6 +206,17 @@ export default function RecruiterPanel() {
     <PanelShell nav={nav} publicLink={{ to: '/talent', label: 'Find talent' }}>
       <Routes>
         <Route index element={<Overview />} />
+        <Route path="hiring" element={<HiringOverview />} />
+        <Route path="roles" element={<ContentTable kind="opportunities" />} />
+        <Route path="roles/new" element={<RoleEditor backTo="/panel/roles" />} />
+        <Route path="roles/:id" element={<RoleEditor backTo="/panel/roles" />} />
+        <Route path="challenges" element={<ContentTable kind="challenges" />} />
+        <Route path="challenges/new" element={<ChallengeEditor backTo="/panel/challenges" />} />
+        <Route path="challenges/:id" element={<ChallengeEditor backTo="/panel/challenges" />} />
+        <Route path="applicants" element={<Applicants />} />
+        <Route path="submissions" element={<Submissions />} />
+        <Route path="calendar" element={<Calendar />} />
+        <Route path="company" element={<Company />} />
         <Route path="pipeline" element={<Pipeline />} />
         {sharedRoutes()}
         <Route path="account" element={<AccountSettings />} />

@@ -85,8 +85,8 @@ const decls: Record<string, ToolDecl> = {
   },
   move_applicant: {
     name: 'move_applicant',
-    description: 'Prepare to move an applicant forward to Shortlisted or Interview. The user must approve it. You can never reject anyone.',
-    parameters: obj({ applicationId: str('Application id'), status: { type: 'string', enum: ['Shortlisted', 'Interview'] } }, ['applicationId', 'status']),
+    description: 'Prepare to move an applicant forward to Under review, Shortlisted or Interview. The user must approve it. You can never reject anyone.',
+    parameters: obj({ applicationId: str('Application id'), status: { type: 'string', enum: ['Under review', 'Shortlisted', 'Interview'] } }, ['applicationId', 'status']),
   },
 }
 
@@ -286,7 +286,7 @@ export function useMillisaTools() {
         const app = data.applications.find((a) => a.id === args.applicationId)
         const o = app && data.opportunities.find((x) => x.id === app.opportunityId)
         if (!app || !o || o.ownerId !== account?.id) return { error: 'That application is not for one of your roles.' }
-        if (args.status !== 'Shortlisted' && args.status !== 'Interview') return { error: 'Millisa can only move people forward.' }
+        if (!['Under review', 'Shortlisted', 'Interview'].includes(String(args.status))) return { error: 'Millisa can only move people forward.' }
         return queue(name, `Move ${store.accountById(app.accountId)?.name} to ${args.status} for ${o.title}`, { applicationId: app.id, status: args.status })
       }
       default:

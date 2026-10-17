@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Send } from 'lucide-react'
 import Verified from '../components/Verified'
 import { kindLabel, useStore } from '../store/AppStore'
@@ -10,7 +10,8 @@ export default function Messages() {
   const { otherId } = useParams()
   const { account, threads, conversation, sendMessage, markThreadRead, accountById, data } = useStore()
   const navigate = useNavigate()
-  const [text, setText] = useState('')
+  const { state } = useLocation()
+  const [text, setText] = useState((state as { draft?: string } | null)?.draft ?? '')
   const [picking, setPicking] = useState(false)
   const end = useRef<HTMLDivElement>(null)
   const base = account?.kind === 'admin' ? '/admin/messages' : '/panel/messages'

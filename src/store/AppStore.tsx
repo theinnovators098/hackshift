@@ -10,6 +10,7 @@ import type {
   CareerPlan,
   ContentKind,
   Data,
+  Interview,
   JobFilters,
   Message,
   MillisaTask,
@@ -63,7 +64,12 @@ function load(): Data {
 function normalize(d: Data): Data {
   const fresh = seed()
   const filled = { ...fresh, ...d, settings: { ...fresh.settings, ...d.settings } }
-  return { ...filled, accounts: filled.accounts.map((a) => ({ ...a, kinds: a.kinds?.length ? a.kinds : [a.kind] })) }
+  const status = (s: string): ApplicationStatus => (s === 'Sent' ? 'Applied' : s === 'Not selected' ? 'Rejected' : (s as ApplicationStatus))
+  return {
+    ...filled,
+    accounts: filled.accounts.map((a) => ({ ...a, kinds: a.kinds?.length ? a.kinds : [a.kind] })),
+    applications: filled.applications.map((a) => ({ ...a, status: status(a.status) })),
+  }
 }
 
 export function today() {
@@ -312,25 +318,83 @@ function useAppState() {
         update((d) => {
           const o = d.opportunities.find((x) => x.id === opportunityId)
           const others = d.applications.filter((a) => !(a.accountId === d.session && a.opportunityId === opportunityId))
-          const app = { id: uid('app'), opportunityId, accountId: d.session!, note, appliedOn: today(), status: 'Sent' as const }
+          const app = { id: uid('app'), opportunityId, accountId: d.session!, note, appliedOn: today(), status: 'Applied' as const }
           const next = notify({ ...d, applications: [...others, app] }, o?.ownerId, `${nameOf(d)} applied to ${o?.title}`, '/panel/applicants')
           return withLog(next, `${nameOf(d)} applied to ${o?.title} at ${o?.company}`)
         }),
       withdrawApplication: (id: string) =>
         update((d) => ({ ...d, applications: d.applications.filter((a) => a.id !== id) })),
-      setApplicationStatus: (id: string, status: ApplicationStatus) =>
+      setApplicationStatus: (id: string, status: ApplicationStatus, rejectReason?: string) =>
         update((d) => {
           const app = d.applications.find((a) => a.id === id)
           const who = app && d.accounts.find((a) => a.id === app.accountId)?.name
           const o = app && d.opportunities.find((x) => x.id === app.opportunityId)
+          const text =
+            status === 'Rejected'
+              ? `${o?.company} has closed your application for ${o?.title}. Read their reason in your panel.`
+              : status === 'Offer'
+                ? `${o?.company} wants to make you an offer for ${o?.title}`
+                : `${o?.company}: your application for ${o?.title} is now ${status.toLowerCase()}`
           const next = notify(
-            { ...d, applications: d.applications.map((a) => (a.id === id ? { ...a, status } : a)) },
+            {
+              ...d,
+              applications: d.applications.map((a) =>
+                a.id === id ? { ...a, status, rejectReason: status === 'Rejected' ? rejectReason : undefined } : a,
+              ),
+            },
             app?.accountId,
-            `${o?.company}: your application for ${o?.title} is now ${status.toLowerCase()}`,
+            text,
             '/panel/applications',
           )
           return withLog(next, `${nameOf(d)} moved ${who}'s application to ${status}`)
         }),
+
+      scheduleInterview: (id: string, interview: Omit<Interview, 'status' | 'reply'>) =>
+        update((d) => {
+          const app = d.applications.find((a) => a.id === id)
+          const o = app && d.opportunities.find((x) => x.id === app.opportunityId)
+          const next = notify(
+            {
+              ...d,
+              applications: d.applications.map((a) =>
+                a.id === id ? { ...a, status: 'Interview' as const, interview: { ...interview, status: 'Proposed' as const } } : a,
+              ),
+            },
+            app?.accountId,
+            `${o?.company} invited you to an interview for ${o?.title}`,
+            '/panel/applications',
+          )
+          return withLog(next, `${nameOf(d)} invited ${d.accounts.find((a) => a.id === app?.accountId)?.name} to an interview`)
+        }),
+      answerInterview: (id: string, accept: boolean, reply: string) =>
+        update((d) => {
+          const app = d.applications.find((a) => a.id === id)
+          const o = app && d.opportunities.find((x) => x.id === app.opportunityId)
+          if (!app?.interview) return d
+          return notify(
+            {
+              ...d,
+              applications: d.applications.map((a) =>
+                a.id === id && a.interview ? { ...a, interview: { ...a.interview, status: accept ? 'Accepted' : 'New time asked', reply } } : a,
+              ),
+            },
+            o?.ownerId,
+            accept ? `${nameOf(d)} accepted the interview for ${o?.title}` : `${nameOf(d)} asked for another interview time for ${o?.title}`,
+            '/panel/applicants',
+          )
+        }),
+      addApplicantNote: (id: string, text: string) =>
+        update((d) => ({
+          ...d,
+          applications: d.applications.map((a) =>
+            a.id === id ? { ...a, notes: [...(a.notes ?? []), { by: nameOf(d), text, on: today() }] } : a,
+          ),
+        })),
+      evaluate: (id: string, score: number, notes: string) =>
+        update((d) => ({
+          ...d,
+          applications: d.applications.map((a) => (a.id === id ? { ...a, evaluation: { score, notes, by: nameOf(d), on: today() } } : a)),
+        })),
 
       submit: (challengeId: string, link: string, note: string) =>
         update((d) => {

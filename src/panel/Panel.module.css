@@ -435,6 +435,12 @@ a.stat:hover {
   line-height: 1.3;
 }
 
+.withMark {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .cardSub {
   color: var(--ink-3);
   font-size: var(--t-sm);

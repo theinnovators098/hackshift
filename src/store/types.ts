@@ -88,7 +88,22 @@ export interface Account {
   resume?: { name: string; readOn: string }
 }
 
-export type ApplicationStatus = 'Sent' | 'Shortlisted' | 'Interview' | 'Hired' | 'Not selected'
+export type ApplicationStatus = 'Applied' | 'Under review' | 'Shortlisted' | 'Interview' | 'Offer' | 'Hired' | 'Rejected'
+
+export interface Interview {
+  when: string
+  mode: 'Video' | 'Phone' | 'In person'
+  where: string
+  status: 'Proposed' | 'Accepted' | 'New time asked'
+  reply?: string
+}
+
+export interface Evaluation {
+  score: number
+  notes: string
+  by: string
+  on: string
+}
 
 export interface Application {
   id: string
@@ -97,6 +112,10 @@ export interface Application {
   note: string
   appliedOn: string
   status: ApplicationStatus
+  rejectReason?: string
+  interview?: Interview
+  notes?: { by: string; text: string; on: string }[]
+  evaluation?: Evaluation
 }
 
 export type SubmissionStatus = 'In review' | 'Accepted' | 'Not selected'

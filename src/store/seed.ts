@@ -105,6 +105,14 @@ function dateLabel(daysAgo: number) {
   return d.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
 }
 
+function interviewAt(days: number, hour: number) {
+  const d = new Date()
+  d.setDate(d.getDate() + days)
+  d.setHours(hour, 0, 0, 0)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:00`
+}
+
 function minutesAgo(n: number) {
   return new Date(Date.now() - n * 60000).toISOString()
 }
@@ -303,7 +311,7 @@ export function seed(): Data {
         accountId: 'acc-vikram-joshi',
         note: 'I built the registration and payment pages for two college fests in React. I also did your payment screen challenge, where I made the amount the biggest thing on the screen.',
         appliedOn: dateLabel(2),
-        status: 'Sent',
+        status: 'Applied',
       },
       {
         id: 'app-2',
@@ -320,6 +328,7 @@ export function seed(): Data {
         note: 'I grouped fraction mistakes for your challenge and found four misconceptions that cover most wrong answers.',
         appliedOn: dateLabel(3),
         status: 'Interview',
+        interview: { when: interviewAt(2, 11), mode: 'Video', where: 'https://meet.google.com/gnt-labs-ml', status: 'Accepted' },
       },
       {
         id: 'app-4',

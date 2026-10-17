@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate, Route, Routes } from 'react-router-dom'
-import { CalendarClock, CalendarDays, LayoutDashboard, UserCog, UserRound } from 'lucide-react'
+import { CalendarCheck, CalendarClock, CalendarDays, LayoutDashboard, UserCog, UserRound } from 'lucide-react'
+import Calendar from './Calendar'
 import { defaultSaturdaySlots, defaultWeekdaySlots } from '../pages/MentorDetail'
 import { useStore, type Booking } from '../store/AppStore'
 import AccountSettings from './AccountSettings'
@@ -347,6 +348,7 @@ export default function MentorPanel() {
     { to: '/panel', label: 'Overview', icon: LayoutDashboard, end: true },
     { to: '/panel/sessions', label: 'Sessions', icon: CalendarDays, count: bookings.filter((b) => b.status === 'Requested').length },
     { to: '/panel/availability', label: 'Weekly times', icon: CalendarClock },
+    { to: '/panel/calendar', label: 'Calendar', icon: CalendarCheck },
     { to: '/panel/profile', label: 'Mentor profile', icon: UserRound },
     ...shared,
     { to: '/panel/account', label: 'Account', icon: UserCog },
@@ -357,6 +359,7 @@ export default function MentorPanel() {
         <Route index element={<Overview />} />
         <Route path="sessions" element={<Sessions />} />
         <Route path="availability" element={<Availability />} />
+        <Route path="calendar" element={<Calendar />} />
         <Route path="profile" element={<MentorProfile />} />
         {sharedRoutes()}
         <Route path="account" element={<AccountSettings />} />

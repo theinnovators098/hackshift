@@ -4,6 +4,10 @@ import { ArrowLeft } from 'lucide-react'
 import type { Challenge, Experience, Level, Opportunity, OpportunityKind, WorkMode } from '../data/types'
 import { jobKinds, modeOf, workModes } from '../lib/jobs'
 import { indianCities } from '../lib/match'
+import { askJson, SMART } from '../lib/millisa'
+import { roleDraftRequest, type RoleDraft } from '../lib/millisaPrompts'
+import { useMillisaTask } from '../millisa/MillisaProvider'
+import { MillisaMark, Problem, Thinking } from '../millisa/parts'
 import { useStore } from '../store/AppStore'
 import { commaList, lines, PanelHead, slug, panelStyles as styles } from './ui'
 
@@ -41,8 +45,26 @@ export function RoleEditor({ backTo }: { backTo: string }) {
   const [work, setWork] = useState(existing?.work.join('\n') ?? '')
   const [challengeId, setChallengeId] = useState(existing?.challengeId ?? '')
   const [error, setError] = useState('')
+  const [notes, setNotes] = useState('')
+  const writer = useMillisaTask<RoleDraft>()
 
   if (id && !existing) return <Missing backTo={backTo} what="role" />
+
+  const write = () =>
+    writer.run(async (signal) => {
+      const res = await askJson<RoleDraft>({ model: SMART, ...roleDraftRequest(notes, company, about, city), signal })
+      const r = res.data
+      setTitle(r.title)
+      setKind(r.kind as OpportunityKind)
+      setMode(r.mode as WorkMode)
+      setExperience((r.experience as Experience) || '')
+      setCity(r.city)
+      setPay(r.pay)
+      setMonthly(r.monthly > 0 ? String(r.monthly) : '')
+      setSkills(r.skills.join(', '))
+      setWork(r.work.join('\n'))
+      return res
+    })
   if (!canEdit) return <Missing backTo={backTo} what="role" />
 
   const ownChallenges = data.challenges.filter((c) => c.company === company)
@@ -89,6 +111,32 @@ export function RoleEditor({ backTo }: { backTo: string }) {
         title={existing ? `Edit: ${existing.title}` : 'Post a role'}
         intro={existing ? `${company}. Changes show up straight away.` : `For ${company}. Say what the work is and what it pays. Roles with pay listed get far more replies.`}
       />
+      {!existing && (
+        <section className={styles.card}>
+          <div className={styles.cardHead}>
+            <p className={`${styles.cardTitle} ${styles.withMark}`}>
+              <MillisaMark size={20} /> Start from a few lines
+            </p>
+          </div>
+          <label className="field">
+            <span>Tell Millisa what you need, in your own words</span>
+            <textarea
+              className="input"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Need someone in Pune to call shopkeepers in Marathi and help them set up UPI. Freshers ok. 22k a month."
+            />
+          </label>
+          <div className={styles.cardFoot}>
+            <button type="button" className="btn btn-primary btn-sm" onClick={write} disabled={notes.trim().length < 15 || writer.status === 'loading'}>
+              Write the role
+            </button>
+            <span className={styles.cardSub}>Millisa fills the form below. Check every field before you post.</span>
+          </div>
+          {writer.status === 'loading' && <Thinking>Millisa is writing the role</Thinking>}
+          {writer.status === 'error' && <Problem message={writer.error ?? ''} onRetry={write} />}
+        </section>
+      )}
       <form className={styles.form} onSubmit={save} noValidate>
         <div className={styles.formRow}>
           <label className="field">
