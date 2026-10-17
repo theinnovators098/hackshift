@@ -82,7 +82,7 @@ export const people: Person[] = [
     city: 'Indore',
     headline: 'B.Com final year, teaching herself frontend',
     skills: ['React', 'CSS', 'Figma'],
-    badges: ['Tapri Pay: payment screen', 'Bunkar Studio: weaver tag'],
+    badges: [],
     available: true,
     college: 'DAVV Indore',
   },

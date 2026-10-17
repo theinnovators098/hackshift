@@ -2,15 +2,16 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Languages, MapPin } from 'lucide-react'
 import PageHead from '../components/PageHead'
-import { mentors } from '../data/people'
+import { useStore } from '../store/AppStore'
 import styles from './Mentors.module.css'
 
 export default function Mentors() {
+  const { mentors } = useStore()
   const [topic, setTopic] = useState('')
   const [language, setLanguage] = useState('')
 
-  const topics = useMemo(() => Array.from(new Set(mentors.flatMap((m) => m.expertise))).sort(), [])
-  const languages = useMemo(() => Array.from(new Set(mentors.flatMap((m) => m.languages))).sort(), [])
+  const topics = useMemo(() => Array.from(new Set(mentors.flatMap((m) => m.expertise))).sort(), [mentors])
+  const languages = useMemo(() => Array.from(new Set(mentors.flatMap((m) => m.languages))).sort(), [mentors])
 
   const results = mentors.filter(
     (m) => (!topic || m.expertise.includes(topic)) && (!language || m.languages.includes(language)),

@@ -1,7 +1,6 @@
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, Check, ExternalLink, MapPin, Tag, Users } from 'lucide-react'
-import { schemes } from '../data/schemes'
-import { stages, ventures } from '../data/ventures'
+import { stages } from '../data/ventures'
 import { useStore } from '../store/AppStore'
 import NotFound from './NotFound'
 import styles from './Detail.module.css'
@@ -9,9 +8,10 @@ import own from './VentureDetail.module.css'
 
 export default function VentureDetail() {
   const { id } = useParams()
-  const { profile, myVentures, interested, toggleInterest, reviewRequests, requestReview, moveVenture } = useStore()
+  const { profile, myVentures, interested, toggleInterest, reviewRequests, requestReview, moveVenture, ventures, schemes } = useStore()
 
   const v = [...myVentures, ...ventures].find((x) => x.id === id)
+  const pending = v?.mine && v.status && v.status !== 'live'
   if (!v) return <NotFound />
 
   const current = stages.indexOf(v.stage)
@@ -25,6 +25,13 @@ export default function VentureDetail() {
         <ArrowLeft size={16} /> All ventures
       </Link>
 
+      {pending && (
+        <p className="notice">
+          {v.status === 'pending'
+            ? 'Only you and the HackShift team can see this idea. It goes live once the team approves it.'
+            : 'This idea is hidden from HackShift. Only you and the HackShift team can see it.'}
+        </p>
+      )}
       <header className={styles.head}>
         <p className={styles.kicker}>
           {v.mine ? 'Your venture' : `Founded by ${v.founder}`}

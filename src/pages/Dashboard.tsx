@@ -1,8 +1,5 @@
 import { Link } from 'react-router-dom'
 import { CalendarDays, Check, MapPin, Pencil } from 'lucide-react'
-import { challenges } from '../data/challenges'
-import { opportunities } from '../data/opportunities'
-import { mentors, people } from '../data/people'
 import { roleInfo } from '../data/roles'
 import { matchChallenges, matchOpportunities, greeting } from '../lib/match'
 import { useStore } from '../store/AppStore'
@@ -10,11 +7,12 @@ import styles from './Dashboard.module.css'
 
 export default function Dashboard() {
   const store = useStore()
-  const { profile, submissions, applications, bookings, myVentures, saved, shortlist, reviewRequests } = store
+  const { profile, submissions, applications, bookings, myVentures, saved, shortlist, reviewRequests, opportunities, challenges, people, data } = store
+  const mentors = data.mentors
 
   if (!profile) {
     return (
-      <section className={`wrap ${styles.empty}`}>
+      <section className={styles.empty}>
         <h1>You do not have a profile yet</h1>
         <p>Your dashboard fills up with matched roles, challenges and mentor sessions once we know what you are looking for.</p>
         <Link to="/start" className="btn btn-accent">
@@ -25,8 +23,8 @@ export default function Dashboard() {
   }
 
   const first = profile.name.split(' ')[0]
-  const matches = matchOpportunities(profile.skills, 3)
-  const suggested = matchChallenges(profile.skills, 2).filter((c) => !submissions.some((s) => s.challengeId === c.item.id))
+  const matches = matchOpportunities(opportunities, profile.skills, 3)
+  const suggested = matchChallenges(challenges, profile.skills, 2).filter((c) => !submissions.some((s) => s.challengeId === c.item.id))
   const isFounder = profile.roles.includes('founder') || profile.roles.includes('startup')
   const isHiring = profile.roles.includes('recruiter') || profile.roles.includes('startup')
 
@@ -39,7 +37,7 @@ export default function Dashboard() {
   const doneCount = checklist.filter((c) => c.done).length
 
   return (
-    <div className="wrap">
+    <div>
       <header className={styles.head}>
         <div>
           <h1>
@@ -119,10 +117,10 @@ export default function Dashboard() {
             ) : (
               <ul className={styles.list}>
                 {submissions.map((s) => {
-                  const c = challenges.find((x) => x.id === s.challengeId)
+                  const c = data.challenges.find((x) => x.id === s.challengeId)
                   if (!c) return null
                   return (
-                    <li key={s.challengeId}>
+                    <li key={s.id}>
                       <Link to={`/challenges/${c.id}`} className={styles.row}>
                         <div>
                           <p className={styles.rowTitle}>{c.title}</p>
@@ -130,7 +128,9 @@ export default function Dashboard() {
                             {c.company}, submitted {s.submittedOn}
                           </p>
                         </div>
-                        <span className={`tag ${s.status === 'Accepted' ? 'tag-leaf' : 'tag-marigold'}`}>{s.status}</span>
+                        <span className={`tag ${s.status === 'Accepted' ? 'tag-leaf' : s.status === 'Not selected' ? 'tag-rose' : 'tag-marigold'}`}>
+                          {s.status}
+                        </span>
                       </Link>
                     </li>
                   )
@@ -193,10 +193,10 @@ export default function Dashboard() {
               </div>
               <ul className={styles.list}>
                 {applications.map((a) => {
-                  const o = opportunities.find((x) => x.id === a.opportunityId)
+                  const o = data.opportunities.find((x) => x.id === a.opportunityId)
                   if (!o) return null
                   return (
-                    <li key={a.opportunityId}>
+                    <li key={a.id}>
                       <Link to={`/opportunities/${o.id}`} className={styles.row}>
                         <div>
                           <p className={styles.rowTitle}>{o.title}</p>
@@ -204,7 +204,9 @@ export default function Dashboard() {
                             {o.company}, applied {a.appliedOn}
                           </p>
                         </div>
-                        <span className="tag">Sent</span>
+                        <span className={`tag ${a.status === 'Hired' || a.status === 'Interview' ? 'tag-leaf' : a.status === 'Not selected' ? 'tag-rose' : a.status === 'Shortlisted' ? 'tag-marigold' : ''}`}>
+                          {a.status}
+                        </span>
                       </Link>
                     </li>
                   )
@@ -246,7 +248,7 @@ export default function Dashboard() {
                 {bookings.map((b) => {
                   const m = mentors.find((x) => x.id === b.mentorId)
                   return (
-                    <li key={`${b.mentorId}-${b.day}-${b.time}`}>
+                    <li key={b.id}>
                       <CalendarDays size={16} aria-hidden="true" />
                       <div>
                         <p>
@@ -255,7 +257,9 @@ export default function Dashboard() {
                         <p className={styles.rowSub}>
                           {b.day}, {b.time}
                         </p>
-                        <p className={styles.rowSub}>{b.topic}</p>
+                        <p className={styles.rowSub}>
+                          {b.status}: {b.topic}
+                        </p>
                       </div>
                     </li>
                   )
@@ -284,7 +288,7 @@ export default function Dashboard() {
               <h2 id="saved">Saved</h2>
               <ul className={styles.saved}>
                 {saved.map((id) => {
-                  const o = opportunities.find((x) => x.id === id)
+                  const o = data.opportunities.find((x) => x.id === id)
                   return o ? (
                     <li key={id}>
                       <Link to={`/opportunities/${id}`}>{o.title}</Link>

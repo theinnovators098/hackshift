@@ -1,8 +1,7 @@
 import { Link } from 'react-router-dom'
 import { Clock, IndianRupee } from 'lucide-react'
 import ShiftBoard from '../components/ShiftBoard'
-import { challenges } from '../data/challenges'
-import { stageHelp, stages, ventures } from '../data/ventures'
+import { stageHelp, stages } from '../data/ventures'
 import { useStore } from '../store/AppStore'
 import styles from './Home.module.css'
 
@@ -64,9 +63,9 @@ const cities = [
 ] as const
 
 export default function Home() {
-  const { profile } = useStore()
+  const { profile, challenges, ventures } = useStore()
   const featured = challenges[0]
-  const funded = ventures.find((v) => v.stage === 'Funded')!
+  const funded = ventures.find((v) => v.stage === 'Funded')
 
   return (
     <>
@@ -126,18 +125,20 @@ export default function Home() {
               How a challenge works
             </h2>
             <p>A resume says what you studied. A challenge shows what you can do with it.</p>
-            <Link to={`/challenges/${featured.id}`} className={styles.example}>
-              <span className={styles.exampleCompany}>{featured.company}</span>
-              <span className={styles.exampleTitle}>{featured.title}</span>
-              <span className={styles.exampleMeta}>
-                <span>
-                  <Clock size={14} aria-hidden="true" /> About {featured.hours} hours
+            {featured && (
+              <Link to={`/challenges/${featured.id}`} className={styles.example}>
+                <span className={styles.exampleCompany}>{featured.company}</span>
+                <span className={styles.exampleTitle}>{featured.title}</span>
+                <span className={styles.exampleMeta}>
+                  <span>
+                    <Clock size={14} aria-hidden="true" /> About {featured.hours} hours
+                  </span>
+                  <span>
+                    <IndianRupee size={14} aria-hidden="true" /> {featured.reward.split(' + ')[0].replace('₹', '')}
+                  </span>
                 </span>
-                <span>
-                  <IndianRupee size={14} aria-hidden="true" /> {featured.reward.split(' + ')[0].replace('₹', '')}
-                </span>
-              </span>
-            </Link>
+              </Link>
+            )}
           </div>
           <ol className={styles.steps}>
             {steps.map((s, i) => (
@@ -167,33 +168,35 @@ export default function Home() {
         </div>
         <ol className={styles.track}>
           {stages.map((stage) => (
-            <li key={stage} className={stage === funded.stage ? styles.trackDone : undefined}>
+            <li key={stage} className={stage === (funded?.stage ?? 'Funded') ? styles.trackDone : undefined}>
               <h3>{stage}</h3>
               <p>{stageHelp[stage]}</p>
             </li>
           ))}
         </ol>
-        <div className={styles.story}>
-          <div>
-            <p className={styles.storyName}>
-              {funded.name}, {funded.city}
-            </p>
-            <p className={styles.storyLine}>{funded.oneLiner}.</p>
+        {funded && (
+          <div className={styles.story}>
+            <div>
+              <p className={styles.storyName}>
+                {funded.name}, {funded.city}
+              </p>
+              <p className={styles.storyLine}>{funded.oneLiner}.</p>
+            </div>
+            <ul>
+              {funded.progress.map((p) => (
+                <li key={p}>{p}</li>
+              ))}
+            </ul>
+            <div className={styles.storyActions}>
+              <Link to={`/ventures/${funded.id}`} className="btn btn-ghost btn-sm">
+                Read their story
+              </Link>
+              <Link to="/schemes" className="btn btn-ghost btn-sm">
+                Find a scheme for your idea
+              </Link>
+            </div>
           </div>
-          <ul>
-            {funded.progress.map((p) => (
-              <li key={p}>{p}</li>
-            ))}
-          </ul>
-          <div className={styles.storyActions}>
-            <Link to={`/ventures/${funded.id}`} className="btn btn-ghost btn-sm">
-              Read their story
-            </Link>
-            <Link to="/schemes" className="btn btn-ghost btn-sm">
-              Find a scheme for your idea
-            </Link>
-          </div>
-        </div>
+        )}
       </section>
 
       <section className={`wrap ${styles.section}`} aria-labelledby="cities-title">

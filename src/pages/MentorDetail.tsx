@@ -1,16 +1,15 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, Briefcase, CalendarCheck, Languages, MapPin } from 'lucide-react'
-import { mentors } from '../data/people'
 import { useStore } from '../store/AppStore'
 import NotFound from './NotFound'
 import styles from './Detail.module.css'
 import own from './MentorDetail.module.css'
 
-const weekdaySlots = ['7:00 pm', '7:30 pm', '8:00 pm', '8:30 pm']
-const saturdaySlots = ['10:00 am', '10:30 am', '11:30 am', '4:00 pm']
+export const defaultWeekdaySlots = ['7:00 pm', '7:30 pm', '8:00 pm', '8:30 pm']
+export const defaultSaturdaySlots = ['10:00 am', '10:30 am', '11:30 am', '4:00 pm']
 
-function upcomingDays(count: number) {
+function upcomingDays(count: number, weekdaySlots: string[], saturdaySlots: string[]) {
   const days: { label: string; slots: string[] }[] = []
   const d = new Date()
   while (days.length < count) {
@@ -27,18 +26,22 @@ function upcomingDays(count: number) {
 
 export default function MentorDetail() {
   const { id } = useParams()
-  const { profile, bookings, book, cancelBooking } = useStore()
-  const days = useMemo(() => upcomingDays(5), [])
+  const { profile, bookings, book, cancelBooking, data, visible, account } = useStore()
+  const m = data.mentors.find((x) => x.id === id && visible(x))
+  const weekday = m?.weekdaySlots ?? defaultWeekdaySlots
+  const saturday = m?.saturdaySlots ?? defaultSaturdaySlots
+  const days = useMemo(() => upcomingDays(5, weekday, saturday), [weekday, saturday])
   const [day, setDay] = useState(days[0].label)
   const [time, setTime] = useState('')
   const [topic, setTopic] = useState('')
   const [error, setError] = useState('')
 
-  const m = mentors.find((x) => x.id === id)
   if (!m) return <NotFound />
 
   const mine = bookings.filter((b) => b.mentorId === m.id)
-  const taken = (d: string, t: string) => bookings.some((b) => b.mentorId === m.id && b.day === d && b.time === t)
+  const taken = (d: string, t: string) =>
+    data.bookings.some((b) => b.mentorId === m.id && b.day === d && b.time === t && b.status !== 'Declined')
+  const ownMentorPage = account?.mentorId === m.id
   const slots = days.find((d) => d.label === day)?.slots ?? []
   const first = m.name.split(' ')[0]
 
@@ -119,7 +122,14 @@ export default function MentorDetail() {
         <aside className={styles.aside}>
           <div className={styles.panel}>
             <p className={styles.doneTitle}>Book 30 minutes</p>
-            {!profile ? (
+            {ownMentorPage ? (
+              <>
+                <p className={styles.muted}>This is your mentor page. Manage requests and your weekly times from your panel.</p>
+                <Link to="/panel/sessions" className="btn btn-primary">
+                  Open my sessions
+                </Link>
+              </>
+            ) : !profile ? (
               <>
                 <p className={styles.muted}>
                   {first} reads your profile before the call, so create one first.
@@ -128,6 +138,8 @@ export default function MentorDetail() {
                   Create your profile
                 </Link>
               </>
+            ) : slots.length === 0 ? (
+              <p className={styles.muted}>{first} has no open times this week. Check back in a few days.</p>
             ) : (
               <form className={styles.form} onSubmit={confirm} noValidate>
                 <div className={own.days} role="group" aria-label="Day">
@@ -185,7 +197,7 @@ export default function MentorDetail() {
                   </p>
                 )}
                 <button type="submit" className="btn btn-primary">
-                  {time ? `Book ${day}, ${time}` : 'Book session'}
+                  {time ? `Ask for ${day}, ${time}` : 'Ask for a session'}
                 </button>
               </form>
             )}
@@ -196,7 +208,7 @@ export default function MentorDetail() {
               <p className={styles.doneTitle}>Your sessions with {first}</p>
               <ul className={own.booked}>
                 {mine.map((b) => (
-                  <li key={`${b.day}-${b.time}`}>
+                  <li key={b.id}>
                     <CalendarCheck size={18} aria-hidden="true" />
                     <div>
                       <p>
@@ -204,10 +216,19 @@ export default function MentorDetail() {
                           {b.day}, {b.time}
                         </strong>
                       </p>
-                      <p className={styles.muted}>{b.topic}</p>
-                      <button className={own.cancel} onClick={() => cancelBooking(b)}>
-                        Cancel this session
-                      </button>
+                      <p className={styles.muted}>
+                        {b.status === 'Requested' && `Waiting for ${first} to confirm. `}
+                        {b.status === 'Confirmed' && 'Confirmed. '}
+                        {b.status === 'Declined' && `${first} cannot make this time. Pick another slot. `}
+                        {b.status === 'Done' && 'Done. '}
+                        {b.topic}
+                      </p>
+                      {b.mentorNote && <p className={styles.muted}>Note from {first}: {b.mentorNote}</p>}
+                      {(b.status === 'Requested' || b.status === 'Confirmed') && (
+                        <button className={own.cancel} onClick={() => cancelBooking(b.id)}>
+                          Cancel this session
+                        </button>
+                      )}
                     </div>
                   </li>
                 ))}

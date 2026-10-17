@@ -2,17 +2,17 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { MapPin, Plus, Users } from 'lucide-react'
 import PageHead from '../components/PageHead'
-import { stageHelp, stages, ventures } from '../data/ventures'
+import { stageHelp, stages } from '../data/ventures'
 import type { Stage } from '../data/types'
 import { useStore } from '../store/AppStore'
 import styles from './Ventures.module.css'
 
 export default function Ventures() {
-  const { myVentures, interested } = useStore()
+  const { myVentures, interested, ventures } = useStore()
   const [sector, setSector] = useState('')
   const [mobileStage, setMobileStage] = useState<Stage>('Idea')
 
-  const all = [...myVentures, ...ventures]
+  const all = [...myVentures.filter((v) => v.status !== 'live'), ...ventures]
   const sectors = Array.from(new Set(all.map((v) => v.sector))).sort()
   const shown = all.filter((v) => !sector || v.sector === sector)
 

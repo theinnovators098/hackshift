@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Bookmark, BookmarkCheck, Search, Zap } from 'lucide-react'
 import PageHead from '../components/PageHead'
-import { opportunities } from '../data/opportunities'
 import type { OpportunityKind } from '../data/types'
 import { overlap } from '../lib/match'
 import { useStore } from '../store/AppStore'
@@ -11,14 +10,14 @@ import styles from './Opportunities.module.css'
 const kinds: (OpportunityKind | 'All')[] = ['All', 'Internship', 'Job', 'Gig', 'Co-founder']
 
 export default function Opportunities() {
-  const { profile, saved, toggleSaved } = useStore()
+  const { profile, saved, toggleSaved, opportunities } = useStore()
   const [kind, setKind] = useState<OpportunityKind | 'All'>('All')
   const [query, setQuery] = useState('')
   const [city, setCity] = useState('')
   const [remoteOnly, setRemoteOnly] = useState(false)
   const [mineOnly, setMineOnly] = useState(false)
 
-  const cities = useMemo(() => Array.from(new Set(opportunities.map((o) => o.city))).sort(), [])
+  const cities = useMemo(() => Array.from(new Set(opportunities.map((o) => o.city))).sort(), [opportunities])
 
   const results = opportunities.filter((o) => {
     if (kind !== 'All' && o.kind !== kind) return false

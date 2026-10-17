@@ -1,10 +1,5 @@
-import { challenges } from '../data/challenges'
-import { opportunities } from '../data/opportunities'
-import { mentors } from '../data/people'
 import { roleInfo } from '../data/roles'
-import { schemes } from '../data/schemes'
-import { ventures } from '../data/ventures'
-import type { Challenge, Opportunity, Stage, Venture } from '../data/types'
+import type { Challenge, Mentor, Opportunity, Scheme, Stage, Venture } from '../data/types'
 import type { Profile, Submission } from '../store/AppStore'
 import { languageRule, type Lang, type Turn } from './millisa'
 
@@ -49,7 +44,15 @@ function roleBlock(o: Opportunity) {
   ].join('\n')
 }
 
-function catalog(myVentures: Venture[]) {
+export interface Site {
+  opportunities: Opportunity[]
+  challenges: Challenge[]
+  mentors: Mentor[]
+  ventures: Venture[]
+  schemes: Scheme[]
+}
+
+function catalog({ opportunities, challenges, mentors, ventures, schemes }: Site) {
   const groupName = (g: string) => (g === 'women' ? 'women founders' : 'SC/ST founders')
   return [
     'OPPORTUNITIES',
@@ -71,7 +74,7 @@ function catalog(myVentures: Venture[]) {
     ),
     '',
     'VENTURES',
-    ...[...myVentures, ...ventures].map(
+    ...ventures.map(
       (v) =>
         `- [${v.name}](/ventures/${v.id}) | ${v.oneLiner} | ${v.city} | ${v.sector} | stage: ${v.stage} | looking for: ${v.lookingFor.join(', ') || 'nothing listed'}${v.mine ? ' | posted by this user' : ''}`,
     ),
@@ -84,7 +87,7 @@ function catalog(myVentures: Venture[]) {
   ].join('\n')
 }
 
-export function chatSystem(profile: Profile | null, myVentures: Venture[], page: string, lang: Lang) {
+export function chatSystem(profile: Profile | null, site: Site, page: string, lang: Lang) {
   return [
     persona,
     '',
@@ -104,7 +107,7 @@ export function chatSystem(profile: Profile | null, myVentures: Venture[], page:
     profileBlock(profile),
     '',
     'HACKSHIFT DATA',
-    catalog(myVentures),
+    catalog(site),
   ].join('\n')
 }
 

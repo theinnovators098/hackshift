@@ -1,19 +1,18 @@
 import { useMemo, useState } from 'react'
 import { BadgeCheck, Search, Star } from 'lucide-react'
 import PageHead from '../components/PageHead'
-import { people } from '../data/people'
 import { useStore } from '../store/AppStore'
 import styles from './Talent.module.css'
 
 export default function Talent() {
-  const { shortlist, toggleShortlist } = useStore()
+  const { shortlist, toggleShortlist, people } = useStore()
   const [query, setQuery] = useState('')
   const [city, setCity] = useState('')
   const [verifiedOnly, setVerifiedOnly] = useState(true)
   const [availableOnly, setAvailableOnly] = useState(false)
   const [showShortlist, setShowShortlist] = useState(false)
 
-  const cities = useMemo(() => Array.from(new Set(people.map((p) => p.city))).sort(), [])
+  const cities = useMemo(() => Array.from(new Set(people.map((p) => p.city))).sort(), [people])
 
   const results = people.filter((p) => {
     if (showShortlist) return shortlist.includes(p.id)

@@ -1,8 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, BadgeCheck, CalendarClock, Clock, Gauge, Users } from 'lucide-react'
-import { challenges } from '../data/challenges'
-import { opportunities } from '../data/opportunities'
 import PreReview from '../millisa/PreReview'
 import { useStore } from '../store/AppStore'
 import NotFound from './NotFound'
@@ -10,13 +8,13 @@ import styles from './Detail.module.css'
 
 export default function ChallengeDetail() {
   const { id } = useParams()
-  const { profile, submissions, submit, markReviewed } = useStore()
+  const { profile, submissions, submit, data, visible, opportunities } = useStore()
   const [link, setLink] = useState('')
   const [note, setNote] = useState('')
   const [error, setError] = useState('')
   const [editing, setEditing] = useState(false)
 
-  const c = challenges.find((x) => x.id === id)
+  const c = data.challenges.find((x) => x.id === id && visible(x))
   if (!c) return <NotFound />
 
   const mine = submissions.find((s) => s.challengeId === c.id)
@@ -41,6 +39,13 @@ export default function ChallengeDetail() {
         <ArrowLeft size={16} /> All challenges
       </Link>
 
+      {c.status && c.status !== 'live' && (
+        <p className="notice">
+          {c.status === 'pending'
+            ? 'Only you and the HackShift team can see this. It goes live once the team approves it.'
+            : 'This is hidden from HackShift. Only you and the HackShift team can see it.'}
+        </p>
+      )}
       <header className={styles.head}>
         <p className={styles.kicker}>Challenge from {c.company}</p>
         <h1>{c.title}</h1>
@@ -165,6 +170,11 @@ export default function ChallengeDetail() {
                       </p>
                     </div>
                   </div>
+                ) : mine.status === 'Not selected' ? (
+                  <div>
+                    <p className={styles.doneTitle}>Not selected this time</p>
+                    <p className={styles.muted}>{c.company} picked other submissions. Read their note and try the next one.</p>
+                  </div>
                 ) : (
                   <div>
                     <p className={styles.doneTitle}>Submitted on {mine.submittedOn}</p>
@@ -173,18 +183,18 @@ export default function ChallengeDetail() {
                     </p>
                   </div>
                 )}
+                {mine.feedback && (
+                  <p className={styles.muted}>
+                    Note from {c.company}: {mine.feedback}
+                  </p>
+                )}
                 <a href={mine.link} target="_blank" rel="noreferrer" className={styles.muted}>
                   {mine.link}
                 </a>
                 {mine.status === 'In review' && (
-                  <>
-                    <button className="btn btn-ghost btn-sm" onClick={() => setEditing(true)}>
-                      Change my submission
-                    </button>
-                    <button className="btn btn-ghost btn-sm" onClick={() => markReviewed(c.id)}>
-                      Mark as accepted (demo)
-                    </button>
-                  </>
+                  <button className="btn btn-ghost btn-sm" onClick={() => setEditing(true)}>
+                    Change my submission
+                  </button>
                 )}
               </>
             )}

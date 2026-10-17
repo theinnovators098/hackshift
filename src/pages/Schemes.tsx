@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { ExternalLink, Info } from 'lucide-react'
 import PageHead from '../components/PageHead'
-import { schemes } from '../data/schemes'
+import { useStore } from '../store/AppStore'
 import { stages } from '../data/ventures'
 import type { FounderGroup, Scheme, SchemeNeed, Stage } from '../data/types'
 import styles from './Schemes.module.css'
@@ -14,6 +14,7 @@ const needLabels: Record<SchemeNeed, string> = {
 }
 
 export default function Schemes() {
+  const { schemes } = useStore()
   const [stage, setStage] = useState<Stage | null>(null)
   const [needs, setNeeds] = useState<SchemeNeed[]>([])
   const [groups, setGroups] = useState<FounderGroup[]>([])

@@ -1,6 +1,6 @@
 import { opportunities } from '../data/opportunities'
 import { challenges } from '../data/challenges'
-import type { Opportunity } from '../data/types'
+import type { Challenge, Opportunity } from '../data/types'
 
 const norm = (s: string) => s.trim().toLowerCase()
 
@@ -9,15 +9,15 @@ export function overlap(a: string[], b: string[]) {
   return a.filter((x) => set.has(norm(x)))
 }
 
-export function matchOpportunities(skills: string[], limit = 3): { item: Opportunity; hits: string[] }[] {
-  return opportunities
+export function matchOpportunities(list: Opportunity[], skills: string[], limit = 3): { item: Opportunity; hits: string[] }[] {
+  return list
     .map((item) => ({ item, hits: overlap(item.skills, skills) }))
     .sort((x, y) => y.hits.length - x.hits.length || x.item.postedDaysAgo - y.item.postedDaysAgo)
     .slice(0, limit)
 }
 
-export function matchChallenges(skills: string[], limit = 2) {
-  return challenges
+export function matchChallenges(list: Challenge[], skills: string[], limit = 2) {
+  return list
     .map((item) => ({ item, hits: overlap(item.skills, skills) }))
     .sort((x, y) => y.hits.length - x.hits.length)
     .slice(0, limit)

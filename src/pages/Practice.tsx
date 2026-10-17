@@ -1,7 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
-import { opportunities } from '../data/opportunities'
 import { askJson, looksHindi, SMART } from '../lib/millisa'
 import { feedbackRequest, questionsRequest, type Feedback, type Question } from '../lib/millisaPrompts'
 import { useMillisa, useMillisaTask } from '../millisa/MillisaProvider'
@@ -30,7 +29,7 @@ function Score({ value }: { value: number }) {
 
 export default function Practice() {
   const { id } = useParams()
-  const { profile } = useStore()
+  const { profile, opportunities } = useStore()
   const { lang } = useMillisa()
   const questions = useMillisaTask<{ questions: Question[] }>()
   const feedback = useMillisaTask<Feedback>()

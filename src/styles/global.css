@@ -272,6 +272,16 @@ textarea.input {
   border-radius: var(--r-panel);
 }
 
+.notice {
+  margin-top: 16px;
+  padding: 10px 14px;
+  border-radius: var(--r-control);
+  background: var(--marigold-wash);
+  color: var(--marigold-deep);
+  font-size: var(--t-sm);
+  font-weight: 500;
+}
+
 .back-link {
   display: inline-flex;
   align-items: center;

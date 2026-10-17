@@ -1,15 +1,14 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { BadgeCheck, Building2, Hourglass, MapPin, Pencil } from 'lucide-react'
-import { challenges } from '../data/challenges'
 import { roleInfo } from '../data/roles'
 import { useMillisa } from '../millisa/MillisaProvider'
 import { useStore } from '../store/AppStore'
 import styles from './Profile.module.css'
 
 export default function Profile() {
-  const { profile, submissions, myVentures, reset } = useStore()
+  const { profile, submissions, myVentures, data } = useStore()
+  const challenges = data.challenges
   const { connected, disconnect } = useMillisa()
-  const navigate = useNavigate()
 
   if (!profile) {
     return (
@@ -31,13 +30,6 @@ export default function Profile() {
     .join('')
     .slice(0, 2)
     .toUpperCase()
-
-  const clearAll = () => {
-    if (window.confirm('This removes your profile, applications, submissions and bookings from this browser. Continue?')) {
-      reset()
-      navigate('/')
-    }
-  }
 
   return (
     <div className="wrap">
@@ -150,18 +142,15 @@ export default function Profile() {
               ))}
             </div>
           </section>
-          <section className={styles.danger}>
-            <h2>Demo data</h2>
-            <p className={styles.muted}>Everything is saved in this browser only. Clear it to start the demo again.</p>
-            <button className="btn btn-ghost btn-sm" onClick={clearAll}>
-              Clear my data
-            </button>
-            {connected && (
+          {connected && (
+            <section className={styles.danger}>
+              <h2>Millisa</h2>
+              <p className={styles.muted}>Millisa is connected in this browser.</p>
               <button className="btn btn-ghost btn-sm" onClick={disconnect}>
                 Disconnect Millisa
               </button>
-            )}
-          </section>
+            </section>
+          )}
         </aside>
       </div>
     </div>

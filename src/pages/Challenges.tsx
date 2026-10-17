@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Clock, Users, Zap } from 'lucide-react'
 import PageHead from '../components/PageHead'
-import { challenges } from '../data/challenges'
 import type { Level } from '../data/types'
 import { useStore } from '../store/AppStore'
 import styles from './Challenges.module.css'
@@ -10,7 +9,7 @@ import styles from './Challenges.module.css'
 const levels: (Level | 'Any level')[] = ['Any level', 'Beginner', 'Intermediate', 'Advanced']
 
 export default function Challenges() {
-  const { submissions } = useStore()
+  const { submissions, challenges } = useStore()
   const [level, setLevel] = useState<Level | 'Any level'>('Any level')
   const [fastOnly, setFastOnly] = useState(false)
   const [maxHours, setMaxHours] = useState(12)

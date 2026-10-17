@@ -21,13 +21,13 @@
   justify-content: space-between;
   align-items: flex-end;
   gap: 16px;
-  padding-block: 48px 20px;
+  padding-bottom: 20px;
 }
 
 .head h1 {
-  font-size: clamp(var(--t-2xl), 4.6vw, var(--t-4xl));
-  font-variation-settings: 'wdth' 115;
-  letter-spacing: -0.03em;
+  font-size: clamp(var(--t-2xl), 3.6vw, var(--t-3xl));
+  font-variation-settings: 'wdth' 112;
+  letter-spacing: -0.025em;
 }
 
 .headActions {

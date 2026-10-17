@@ -20,7 +20,7 @@ function suggestionsFor(roles: string[]) {
 
 export default function MillisaPanel() {
   const { panelOpen, openPanel, closePanel, lang, ensureKey, keyRejected } = useMillisa()
-  const { profile, myVentures } = useStore()
+  const { profile, myVentures, opportunities, challenges, mentors, ventures, schemes } = useStore()
   const { pathname } = useLocation()
   const [turns, setTurns] = useState<Turn[]>([])
   const [draft, setDraft] = useState('')
@@ -61,7 +61,18 @@ export default function MillisaPanel() {
       let reply = ''
       const stream = streamText({
         model: FAST,
-        system: chatSystem(profile, myVentures, pathname, lang),
+        system: chatSystem(
+          profile,
+          {
+            opportunities,
+            challenges,
+            mentors,
+            schemes,
+            ventures: [...myVentures.filter((v) => v.status !== 'live'), ...ventures],
+          },
+          pathname,
+          lang,
+        ),
         turns: recent,
         temperature: 0.6,
         signal: c.signal,

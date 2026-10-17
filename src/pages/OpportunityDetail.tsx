@@ -1,8 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, Bookmark, BookmarkCheck, CalendarClock, CheckCircle2, MapPin, Wallet, Zap } from 'lucide-react'
-import { challenges } from '../data/challenges'
-import { opportunities } from '../data/opportunities'
 import { overlap } from '../lib/match'
 import DraftNote from '../millisa/DraftNote'
 import FitCheck from '../millisa/FitCheck'
@@ -12,14 +10,15 @@ import styles from './Detail.module.css'
 
 export default function OpportunityDetail() {
   const { id } = useParams()
-  const { profile, saved, toggleSaved, applications, apply, submissions } = useStore()
+  const { profile, saved, toggleSaved, applications, apply, submissions, data, visible, account } = useStore()
   const [open, setOpen] = useState(false)
   const [note, setNote] = useState('')
 
-  const o = opportunities.find((x) => x.id === id)
+  const o = data.opportunities.find((x) => x.id === id && visible(x))
   if (!o) return <NotFound />
 
-  const challenge = challenges.find((c) => c.id === o.challengeId)
+  const challenge = data.challenges.find((c) => c.id === o.challengeId && visible(c))
+  const ownRole = !!account && o.ownerId === account.id
   const challengeDone = challenge && submissions.some((s) => s.challengeId === challenge.id)
   const application = applications.find((a) => a.opportunityId === o.id)
   const hits = profile ? overlap(o.skills, profile.skills) : []
@@ -37,6 +36,13 @@ export default function OpportunityDetail() {
         <ArrowLeft size={16} /> All opportunities
       </Link>
 
+      {o.status && o.status !== 'live' && (
+        <p className="notice">
+          {o.status === 'pending'
+            ? 'Only you and the HackShift team can see this. It goes live once the team approves it.'
+            : 'This is hidden from HackShift. Only you and the HackShift team can see it.'}
+        </p>
+      )}
       <header className={styles.head}>
         <p className={styles.kicker}>
           {o.kind} at {o.company}
@@ -94,12 +100,25 @@ export default function OpportunityDetail() {
               <div className={styles.done}>
                 <CheckCircle2 size={22} aria-hidden="true" />
                 <div>
-                  <p className={styles.doneTitle}>Application sent</p>
+                  <p className={styles.doneTitle}>
+                    {application.status === 'Sent' ? 'Application sent' : `Application: ${application.status}`}
+                  </p>
                   <p className={styles.muted}>
-                    Sent on {application.appliedOn}. {o.company} usually replies within a week.
+                    {application.status === 'Sent' && `Sent on ${application.appliedOn}. ${o.company} usually replies within a week.`}
+                    {application.status === 'Shortlisted' && `${o.company} has shortlisted you. Expect a message soon.`}
+                    {application.status === 'Interview' && `${o.company} wants to interview you. Practise with Millisa before the call.`}
+                    {application.status === 'Hired' && `Congratulations. ${o.company} has picked you for this role.`}
+                    {application.status === 'Not selected' && `${o.company} went with someone else this time.`}
                   </p>
                 </div>
               </div>
+            ) : ownRole ? (
+              <>
+                <p className={styles.muted}>This is one of your roles. See who applied in your panel.</p>
+                <Link to="/panel/applicants" className="btn btn-primary">
+                  See applicants
+                </Link>
+              </>
             ) : open ? (
               <form onSubmit={send} className={styles.form}>
                 <label className="field">

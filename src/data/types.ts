@@ -1,8 +1,15 @@
 export type Role = 'seeker' | 'founder' | 'startup' | 'mentor' | 'recruiter'
 
+export type Visibility = 'live' | 'pending' | 'hidden'
+
+interface Owned {
+  status?: Visibility
+  ownerId?: string
+}
+
 export type OpportunityKind = 'Internship' | 'Job' | 'Gig' | 'Co-founder'
 
-export interface Opportunity {
+export interface Opportunity extends Owned {
   id: string
   title: string
   company: string
@@ -20,7 +27,7 @@ export interface Opportunity {
 
 export type Level = 'Beginner' | 'Intermediate' | 'Advanced'
 
-export interface Challenge {
+export interface Challenge extends Owned {
   id: string
   title: string
   company: string
@@ -37,7 +44,7 @@ export interface Challenge {
 
 export type Stage = 'Idea' | 'Validated' | 'MVP' | 'Funded'
 
-export interface Venture {
+export interface Venture extends Owned {
   id: string
   name: string
   oneLiner: string
@@ -52,7 +59,7 @@ export interface Venture {
   mine?: boolean
 }
 
-export interface Mentor {
+export interface Mentor extends Owned {
   id: string
   name: string
   title: string
@@ -63,6 +70,8 @@ export interface Mentor {
   bio: string
   sessions: number
   yearsExp: number
+  weekdaySlots?: string[]
+  saturdaySlots?: string[]
 }
 
 export interface Person {
@@ -80,6 +89,7 @@ export type SchemeNeed = 'grant' | 'loan' | 'incubation' | 'recognition'
 export type FounderGroup = 'women' | 'scst'
 
 export interface Scheme {
+  hidden?: boolean
   id: string
   name: string
   runBy: string
