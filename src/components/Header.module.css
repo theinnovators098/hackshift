@@ -93,6 +93,23 @@
   font-weight: 700;
 }
 
+.adminAvatar {
+  background: var(--ink);
+  color: var(--marigold);
+}
+
+.signIn {
+  padding: 8px 10px;
+  font-weight: 600;
+  font-size: var(--t-sm);
+  text-decoration: none;
+  color: var(--ink-2);
+}
+
+.signIn:hover {
+  color: var(--ink);
+}
+
 .toggle {
   display: none;
   width: 44px;
@@ -113,6 +130,7 @@
   }
 
   .startBtn,
+  .signIn,
   .meName {
     display: none;
   }
@@ -149,7 +167,8 @@
   }
 
   .mobileCta {
-    display: block;
+    display: grid;
+    gap: 8px;
     padding-top: 16px;
   }
 

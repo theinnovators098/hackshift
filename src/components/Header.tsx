@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
-import { useStore } from '../store/AppStore'
+import { panelPath, useStore } from '../store/AppStore'
 import styles from './Header.module.css'
 
 const links = [
@@ -14,7 +14,8 @@ const links = [
 ]
 
 export default function Header() {
-  const { profile } = useStore()
+  const { account } = useStore()
+  const home = account ? panelPath(account.kind) : '/start'
   const [open, setOpen] = useState(false)
   const { pathname } = useLocation()
 
@@ -37,30 +38,40 @@ export default function Header() {
             </NavLink>
           ))}
           <div className={styles.mobileCta}>
-            {profile ? (
-              <Link to="/dashboard" className="btn btn-primary">
-                My dashboard
+            {account ? (
+              <Link to={home} className="btn btn-primary">
+                {account.kind === 'admin' ? 'Admin panel' : 'My panel'}
               </Link>
             ) : (
-              <Link to="/start" className="btn btn-accent">
-                Create your profile
-              </Link>
+              <>
+                <Link to="/start" className="btn btn-accent">
+                  Create your profile
+                </Link>
+                <Link to="/login" className="btn btn-ghost">
+                  Sign in
+                </Link>
+              </>
             )}
           </div>
         </nav>
 
         <div className={styles.right}>
-          {profile ? (
-            <Link to="/dashboard" className={styles.me}>
-              <span className={styles.avatar} aria-hidden="true">
-                {profile.name.charAt(0).toUpperCase()}
+          {account ? (
+            <Link to={home} className={styles.me} aria-label={`Open ${account.kind === 'admin' ? 'admin panel' : 'my panel'}`}>
+              <span className={`${styles.avatar} ${account.kind === 'admin' ? styles.adminAvatar : ''}`} aria-hidden="true">
+                {account.name.charAt(0).toUpperCase()}
               </span>
-              <span className={styles.meName}>{profile.name.split(' ')[0]}</span>
+              <span className={styles.meName}>{account.kind === 'admin' ? 'Admin' : account.name.split(' ')[0]}</span>
             </Link>
           ) : (
-            <Link to="/start" className={`btn btn-primary btn-sm ${styles.startBtn}`}>
-              Create your profile
-            </Link>
+            <>
+              <Link to="/login" className={styles.signIn}>
+                Sign in
+              </Link>
+              <Link to="/start" className={`btn btn-primary btn-sm ${styles.startBtn}`}>
+                Create your profile
+              </Link>
+            </>
           )}
           <button
             className={styles.toggle}

@@ -1,10 +1,10 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Check, Plus } from 'lucide-react'
 import { roleInfo, roleOrder } from '../data/roles'
 import type { Role } from '../data/types'
 import { allSkills, indianCities } from '../lib/match'
-import { useStore, type Profile } from '../store/AppStore'
+import { kindFor, kindLabel, useStore, type Profile } from '../store/AppStore'
 import styles from './Onboarding.module.css'
 
 const stepTitles = ['About you', 'Why you are here', 'What you can do', 'What you want next']
@@ -18,12 +18,14 @@ const goalIdeas = [
 ]
 
 export default function Onboarding() {
-  const { profile, saveProfile } = useStore()
+  const { profile, saveProfile, signUp } = useStore()
   const navigate = useNavigate()
   const [step, setStep] = useState(0)
   const [draft, setDraft] = useState<Profile>(
     profile ?? { name: '', city: '', college: '', roles: [], skills: [], goal: '' },
   )
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
   const [customSkill, setCustomSkill] = useState('')
   const [error, setError] = useState('')
 
@@ -46,6 +48,8 @@ export default function Onboarding() {
 
   const validate = () => {
     if (step === 0 && (!draft.name.trim() || !draft.city.trim())) return 'Add your name and city to continue.'
+    if (step === 0 && !profile && !/^\S+@\S+\.\S+$/.test(email.trim())) return 'Add an email you can sign in with.'
+    if (step === 0 && !profile && password.length < 6) return 'Pick a password with at least 6 characters.'
     if (step === 1 && draft.roles.length === 0) return 'Pick at least one. You can change this later.'
     if (step === 2 && draft.skills.length === 0) return 'Pick at least one skill, even if you are still learning it.'
     return ''
@@ -62,8 +66,19 @@ export default function Onboarding() {
       setStep(step + 1)
       return
     }
-    saveProfile({ ...draft, name: draft.name.trim(), city: draft.city.trim() })
-    navigate('/dashboard')
+    const clean = { ...draft, name: draft.name.trim(), city: draft.city.trim(), college: draft.college.trim() }
+    if (profile) {
+      saveProfile(clean)
+      navigate('/panel')
+      return
+    }
+    const problem2 = signUp(clean, email, password)
+    if (problem2) {
+      setStep(0)
+      setError(problem2)
+      return
+    }
+    navigate('/panel')
   }
 
   const skillOptions = Array.from(new Set([...allSkills, ...draft.skills]))
@@ -73,6 +88,11 @@ export default function Onboarding() {
       <aside className={styles.aside}>
         <h1>{profile ? 'Edit your profile' : 'Create your profile'}</h1>
         <p>This is what startups, mentors and recruiters see. You can change any of it later.</p>
+        {!profile && (
+          <p className={styles.signin}>
+            Already on HackShift? <Link to="/login">Sign in</Link>
+          </p>
+        )}
         <ol className={styles.steps}>
           {stepTitles.map((t, i) => (
             <li key={t} className={i === step ? styles.current : i < step ? styles.done : undefined}>
@@ -119,6 +139,38 @@ export default function Onboarding() {
                 ))}
               </datalist>
             </label>
+            {!profile && (
+              <div className={styles.pair}>
+                <label className="field">
+                  <span>Email</span>
+                  <input
+                    className="input"
+                    type="email"
+                    value={email}
+                    onChange={(e) => {
+                      setEmail(e.target.value)
+                      setError('')
+                    }}
+                    autoComplete="email"
+                    placeholder="you@example.com"
+                  />
+                </label>
+                <label className="field">
+                  <span>Password</span>
+                  <input
+                    className="input"
+                    type="password"
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value)
+                      setError('')
+                    }}
+                    autoComplete="new-password"
+                    placeholder="At least 6 characters"
+                  />
+                </label>
+              </div>
+            )}
             <label className="field">
               <span>College or company</span>
               <input
@@ -193,6 +245,11 @@ export default function Onboarding() {
         {step === 3 && (
           <fieldset className={styles.fields}>
             <legend>What do you want in the next three months?</legend>
+            {!profile && (
+              <p className={styles.help}>
+                You will get a {kindLabel[kindFor(draft.roles)].toLowerCase()} panel to manage everything in one place.
+              </p>
+            )}
             <div className={styles.chips}>
               {goalIdeas.map((g) => (
                 <button type="button" key={g} className="chip" aria-pressed={draft.goal === g} onClick={() => update({ goal: g })}>
@@ -228,7 +285,7 @@ export default function Onboarding() {
             <span />
           )}
           <button type="submit" className="btn btn-primary">
-            {step < stepTitles.length - 1 ? 'Continue' : profile ? 'Save profile' : 'Finish and see my dashboard'}
+            {step < stepTitles.length - 1 ? 'Continue' : profile ? 'Save profile' : 'Create my account'}
           </button>
         </div>
       </form>

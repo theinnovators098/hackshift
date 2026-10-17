@@ -17,6 +17,21 @@
   color: var(--ink-2);
 }
 
+.signin {
+  margin-top: 16px;
+  font-size: var(--t-sm);
+}
+
+.signin a {
+  font-weight: 600;
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
 .steps {
   list-style: none;
   margin: 32px 0 0;
@@ -197,7 +212,8 @@
     padding: 22px 18px;
   }
 
-  .roles {
+  .roles,
+  .pair {
     grid-template-columns: 1fr;
   }
 }

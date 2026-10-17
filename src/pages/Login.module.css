@@ -1,0 +1,142 @@
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  gap: 56px;
+  padding-block: 64px 0;
+  align-items: start;
+}
+
+.formSide h1 {
+  font-size: clamp(var(--t-3xl), 5vw, var(--t-4xl));
+  font-variation-settings: 'wdth' 115;
+  letter-spacing: -0.03em;
+}
+
+.lede {
+  margin-top: 10px;
+  color: var(--ink-2);
+  font-size: var(--t-md);
+  max-width: 40ch;
+}
+
+.form {
+  display: grid;
+  gap: 18px;
+  margin-top: 28px;
+  max-width: 400px;
+}
+
+.form button {
+  justify-self: start;
+}
+
+.error {
+  padding: 10px 14px;
+  border-radius: var(--r-control);
+  background: var(--rose-wash);
+  color: var(--rose);
+  font-weight: 500;
+  font-size: var(--t-sm);
+}
+
+.alt {
+  margin-top: 24px;
+  color: var(--ink-2);
+}
+
+.alt a {
+  font-weight: 600;
+}
+
+.demoSide {
+  padding: 28px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-panel);
+}
+
+.demoSide h2 {
+  font-size: var(--t-xl);
+}
+
+.demoSide > p {
+  margin-top: 6px;
+  color: var(--ink-2);
+}
+
+.code {
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--line-soft);
+  font-size: 0.92em;
+  color: var(--ink);
+}
+
+.demos {
+  list-style: none;
+  margin: 20px 0 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+
+.demos li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.demos li:last-child {
+  border-bottom: 0;
+}
+
+.demoKind {
+  font-size: var(--t-xs);
+  font-weight: 700;
+  color: var(--marigold-deep);
+}
+
+.demoName {
+  font-weight: 700;
+}
+
+.demoWhat {
+  font-size: var(--t-sm);
+  color: var(--ink-3);
+}
+
+.demos li.adminRow {
+  margin: 8px -12px 0;
+  padding: 14px 12px;
+  border-radius: var(--r-control);
+  background: var(--ink);
+  color: #fff;
+}
+
+.adminRow .demoKind {
+  color: var(--marigold);
+}
+
+.adminRow .demoWhat {
+  color: #9196b5;
+}
+
+@media (max-width: 860px) {
+  .page {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    padding-top: 36px;
+  }
+
+  .demoSide {
+    padding: 20px 16px;
+  }
+
+  .demos li {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}
