@@ -24,6 +24,34 @@ HackShift puts job seekers, founders, startups, mentors and recruiters on one pl
 | Government schemes | Answer three questions to see which schemes fit you, such as Startup India Seed Fund, MUDRA and Stand-Up India. |
 | Dashboard | Changes with your role: matched roles, challenge status, ventures, sessions and a progress checklist. |
 
+## Panels for every role
+
+Sign in at `/login`. Each account type gets its own panel at `/panel`, and the super admin works from `/admin`.
+
+| Panel | Who | What they manage |
+| --- | --- | --- |
+| Job seeker | Students, job seekers and founders | Applications and their status, challenge submissions and feedback, mentor sessions, saved roles, their ventures, account |
+| Startup | Companies hiring on HackShift | Post and edit roles and challenges, move applicants through Shortlisted, Interview and Hired, accept challenge work with feedback, company profile |
+| Mentor | Mentors | Accept or decline session requests, mark sessions done with a note, set weekly times, edit the mentor profile |
+| Recruiter | Hiring teams | A pipeline from Shortlisted to Hired with notes and interview times, filled from Find talent |
+| Super admin | The HackShift team | Every account (suspend, delete, view as the user), the review queue for new posts and mentors, all content, government schemes, the activity log and platform settings |
+
+Changes flow between panels. When a startup moves an applicant to Interview, the applicant sees it in their panel. When a mentor accepts a session, the person who booked it sees it confirmed.
+
+### Demo accounts
+
+The sign-in page has one-click demo accounts. They all use the password `demo1234`.
+
+| Account | Email |
+| --- | --- |
+| Job seeker | riya@hackshift.in |
+| Startup (Tapri Pay) | karan@tapripay.in |
+| Mentor | meera@hackshift.in |
+| Recruiter (Pinwheel Logistics) | neha@pinwheel.in |
+| Super admin | admin@hackshift.in |
+
+All accounts and data are saved in the browser, so this is a demo, not real security. The super admin can reset everything to the demo data from Settings.
+
 ## Millisa, the HackShift assistant
 
 Millisa is built into the pages people already use. It replies in English or Hindi.
@@ -89,8 +117,8 @@ npm run preview
 
 ## Demo flow
 
-1. Create a profile and pick "Looking for work" and "Building an idea".
-2. Open a challenge, submit a link and mark it accepted to see the badge on your profile.
+1. Sign in as Riya, the job seeker, from the sign-in page.
+2. Open the Tapri Pay challenge and submit a link. Sign in as Karan from Tapri Pay and accept it to give Riya a badge.
 3. Apply to an opportunity linked to that challenge.
 4. Post an idea in Ventures and ask for a mentor review.
 5. Book a mentor session and check it on your dashboard.
@@ -98,7 +126,7 @@ npm run preview
 7. Open a role, press "Check my fit", then "Practice the interview" and answer one question in Hindi.
 8. Ask Millisa in Hindi: "मेरे आइडिया के लिए कौन सी सरकारी योजना सही है?"
 
-To start over, open your profile and choose "Clear my data".
+To start over, sign in as the super admin and choose "Reset to demo data" in Settings.
 
 ## Project structure
 
@@ -109,7 +137,8 @@ src/
   lib/          skill matching, the Millisa client and its prompts
   millisa/      Millisa chat panel, key dialog and the feature panels
   pages/        one file per screen, each with its own CSS module
-  store/        app state saved to localStorage
+  panel/        the job seeker, startup, mentor, recruiter and super admin panels
+  store/        accounts and data saved to localStorage, and the demo seed
   styles/       design tokens and shared styles
 ```
 
