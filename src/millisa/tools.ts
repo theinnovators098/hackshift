@@ -14,7 +14,7 @@ const decls: Record<string, ToolDecl> = {
     description: 'Search live jobs, internships, gigs and co-founder roles on HackShift. Returns ids you can use with other tools.',
     parameters: obj({
       query: str('Words to match against title, company, city or skills. Empty for everything.'),
-      kind: { type: 'string', enum: ['Internship', 'Job', 'Gig', 'Co-founder'] },
+      kind: { type: 'string', enum: ['Internship', 'Job', 'Part-time', 'Apprenticeship', 'Contract', 'Gig', 'Co-founder'] },
       city: str('City name'),
       remote: { type: 'boolean', description: 'Only roles that can be done remotely' },
     }),
@@ -73,7 +73,7 @@ const decls: Record<string, ToolDecl> = {
     parameters: obj(
       {
         title: str('Role title'),
-        kind: { type: 'string', enum: ['Internship', 'Job', 'Gig', 'Co-founder'] },
+        kind: { type: 'string', enum: ['Internship', 'Job', 'Part-time', 'Apprenticeship', 'Contract', 'Gig', 'Co-founder'] },
         city: str('City'),
         remote: { type: 'boolean', description: 'True only if the user said the role can be remote' },
         pay: str('Pay in rupees, for example ₹15,000 / month'),

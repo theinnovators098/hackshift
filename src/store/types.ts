@@ -1,6 +1,25 @@
-import type { Challenge, Mentor, Opportunity, Person, Role, Scheme, Venture } from '../data/types'
+import type { Challenge, Experience, Mentor, Opportunity, OpportunityKind, Person, Role, Scheme, Venture, WorkMode } from '../data/types'
 
 export type AccountKind = 'seeker' | 'startup' | 'mentor' | 'recruiter' | 'admin'
+
+export interface Education {
+  school: string
+  degree: string
+  years: string
+}
+
+export interface Work {
+  role: string
+  org: string
+  years: string
+  summary: string
+}
+
+export interface Certificate {
+  name: string
+  issuer: string
+  year: string
+}
 
 export interface Profile {
   name: string
@@ -9,6 +28,41 @@ export interface Profile {
   roles: Role[]
   skills: string[]
   goal: string
+  headline?: string
+  about?: string
+  education?: Education[]
+  work?: Work[]
+  certificates?: Certificate[]
+  links?: { github?: string; portfolio?: string; linkedin?: string; website?: string }
+  visibility?: 'public' | 'hiring' | 'private'
+  allowMessages?: boolean
+}
+
+export interface JobFilters {
+  query?: string
+  kind?: OpportunityKind | 'All'
+  city?: string
+  mode?: WorkMode | ''
+  experience?: Experience | ''
+  minPay?: number
+  mineOnly?: boolean
+}
+
+export interface SavedSearch {
+  id: string
+  label: string
+  filters: JobFilters
+  createdOn: string
+}
+
+export interface CareerPlan {
+  target: string
+  madeOn: string
+  have: string[]
+  gaps: { skill: string; why: string; how: string }[]
+  weeks: { week: number; focus: string; tasks: string[] }[]
+  challengeIds: string[]
+  mentorIds: string[]
 }
 
 export interface Account {
@@ -29,6 +83,9 @@ export interface Account {
   kinds: AccountKind[]
   verified?: boolean
   verifyRequested?: boolean
+  savedSearches?: SavedSearch[]
+  careerPlan?: CareerPlan
+  resume?: { name: string; readOn: string }
 }
 
 export type ApplicationStatus = 'Sent' | 'Shortlisted' | 'Interview' | 'Hired' | 'Not selected'

@@ -1,13 +1,16 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { Challenge, Mentor, Opportunity, Person, Role, Scheme, Stage, Venture, Visibility } from '../data/types'
+import { describe, matches } from '../lib/jobs'
 import { seed } from './seed'
 import type {
   Account,
   AccountKind,
   ApplicationStatus,
   BookingStatus,
+  CareerPlan,
   ContentKind,
   Data,
+  JobFilters,
   Message,
   MillisaTask,
   Notice,
@@ -88,6 +91,16 @@ function notify(d: Data, accountId: string | undefined, text: string, link?: str
   return { ...d, notices: [notice, ...d.notices].slice(0, 300) }
 }
 
+function alertSearches(d: Data, o: Opportunity): Data {
+  let next = d
+  for (const a of d.accounts) {
+    if (a.id === o.ownerId || a.status !== 'active') continue
+    const hit = a.savedSearches?.find((s) => matches(o, s.filters, a.profile))
+    if (hit) next = notify(next, a.id, `New role for your saved search (${hit.label}): ${o.title} at ${o.company}`, `/opportunities/${o.id}`)
+  }
+  return next
+}
+
 function mentorAccountId(d: Data, mentorId: string) {
   return d.accounts.find((a) => a.mentorId === mentorId)?.id
 }
@@ -141,10 +154,16 @@ function useAppState() {
         .map((s) => challengeTitle(s.challengeId))
         .filter(Boolean)
 
+    const hiringViewer = !!account && ['startup', 'recruiter', 'admin'].includes(account.kind)
+    const shown = (a?: Account) => {
+      const v = a?.profile.visibility ?? 'public'
+      return v === 'public' || (v === 'hiring' && hiringViewer) || a?.id === myId
+    }
+
     const people: Person[] = [
       ...data.people.flatMap((p) => {
         const acc = data.accounts.find((a) => a.personId === p.id)
-        if (acc?.status === 'suspended') return []
+        if (acc?.status === 'suspended' || (acc && !shown(acc))) return []
         const extra = acc ? badgesFor(acc.id) : []
         const fromProfile = acc
           ? { name: acc.profile.name, city: acc.profile.city, skills: acc.profile.skills, college: acc.profile.college || p.college }
@@ -152,7 +171,7 @@ function useAppState() {
         return [{ ...p, ...fromProfile, badges: Array.from(new Set([...p.badges, ...extra])) }]
       }),
       ...data.accounts
-        .filter((a) => a.kind === 'seeker' && !a.personId && a.status === 'active')
+        .filter((a) => a.kinds.includes('seeker') && !a.personId && a.status === 'active' && shown(a))
         .map((a) => ({
           id: a.id,
           name: a.profile.name,
@@ -238,7 +257,9 @@ function useAppState() {
         const saved = exists ? item : { ...item, status: newStatus(d), ownerId: item.ownerId ?? d.session ?? undefined }
         const nextList = exists ? list.map((x) => (x.id === item.id ? saved : x)) : [saved, ...list]
         const verb = exists ? 'updated' : saved.status === 'pending' ? 'posted for review' : 'posted'
-        return withLog({ ...d, [kind]: nextList }, `${nameOf(d)} ${verb} "${label}"`)
+        let next: Data = { ...d, [kind]: nextList }
+        if (kind === 'opportunities' && !exists && saved.status === 'live') next = alertSearches(next, saved as unknown as Opportunity)
+        return withLog(next, `${nameOf(d)} ${verb} "${label}"`)
       })
 
     return {
@@ -383,6 +404,10 @@ function useAppState() {
           let next: Data = { ...d, [kind]: (d[kind] as { id: string }[]).map((x) => (x.id === id ? { ...x, status } : x)) }
           const admin = d.accounts.find((a) => a.id === d.session)?.kind === 'admin'
           if (admin && status === 'live') next = notify(next, item?.ownerId, `"${label}" is approved and live on HackShift`, '/panel')
+          if (status === 'live' && kind === 'opportunities' && (item as { status?: Visibility })?.status !== 'live') {
+            const o = next.opportunities.find((x) => x.id === id)
+            if (o) next = alertSearches(next, o)
+          }
           if (admin && status === 'hidden') next = notify(next, item?.ownerId, `"${label}" was not approved. Write to the HackShift team to know why.`, '/panel')
           return withLog(next, `${nameOf(d)} ${verb} "${label}"`)
         }),
@@ -502,6 +527,22 @@ function useAppState() {
           return withLog(next, `${nameOf(d)} ${verified ? 'verified' : 'declined verification for'} ${acc?.name}`)
         }),
       isVerified: (ownerId?: string) => !!ownerId && !!data.accounts.find((a) => a.id === ownerId)?.verified,
+
+      savedSearches: account?.savedSearches ?? [],
+      saveSearch: (filters: JobFilters) =>
+        update((d) =>
+          patchMe(d, (a) => ({
+            ...a,
+            savedSearches: [
+              { id: uid('search'), label: describe(filters), filters, createdOn: today() },
+              ...(a.savedSearches ?? []).filter((s) => describe(s.filters) !== describe(filters)),
+            ].slice(0, 10),
+          })),
+        ),
+      deleteSearch: (id: string) =>
+        update((d) => patchMe(d, (a) => ({ ...a, savedSearches: (a.savedSearches ?? []).filter((s) => s.id !== id) }))),
+      saveCareerPlan: (plan: CareerPlan) => update((d) => patchMe(d, (a) => ({ ...a, careerPlan: plan }))),
+      setResume: (name: string) => update((d) => patchMe(d, (a) => ({ ...a, resume: { name, readOn: today() } }))),
 
       tasks: data.tasks.filter((t) => t.accountId === myId),
       addTask: (task: Omit<MillisaTask, 'accountId' | 'at'>) =>

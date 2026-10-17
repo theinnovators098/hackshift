@@ -1,0 +1,181 @@
+.top {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr);
+  gap: 16px;
+}
+
+.score {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  padding: 18px;
+  border-radius: var(--r-panel);
+  background: var(--ink);
+  color: #fff;
+}
+
+.scoreNum {
+  font-size: var(--t-2xl);
+  font-weight: 800;
+  font-variation-settings: 'wdth' 120;
+  line-height: 1;
+}
+
+.scoreNum span {
+  font-size: var(--t-4xl);
+}
+
+.scoreLabel {
+  color: #c9cce0;
+  font-size: var(--t-sm);
+}
+
+.meter {
+  height: 6px;
+  border-radius: 3px;
+  background: #353a63;
+  overflow: hidden;
+}
+
+.meter span {
+  display: block;
+  height: 100%;
+  background: var(--marigold);
+}
+
+.score ul {
+  margin: 8px 0 0;
+  padding-left: 16px;
+  display: grid;
+  gap: 4px;
+  color: #c9cce0;
+  font-size: var(--t-xs);
+}
+
+.resume {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 14px;
+  padding: 18px 20px;
+  border: 1px dashed #d8b45a;
+  border-radius: var(--r-panel);
+  background: #fffaf0;
+}
+
+.resumeHead {
+  display: flex;
+  gap: 12px;
+}
+
+.resumeHead h2 {
+  font-size: var(--t-md);
+}
+
+.resumeHead p {
+  margin-top: 2px;
+  color: var(--ink-2);
+  font-size: var(--t-sm);
+}
+
+.found {
+  display: grid;
+  gap: 8px;
+  font-size: var(--t-sm);
+}
+
+.foundLine {
+  color: var(--ink-2);
+  font-style: italic;
+}
+
+.rows {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)) 36px;
+  gap: 10px;
+  align-items: end;
+  width: 100%;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line-soft);
+}
+
+.wide {
+  grid-column: span 2;
+}
+
+.remove {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 44px;
+  border: 0;
+  border-radius: var(--r-control);
+  background: none;
+  color: var(--ink-3);
+  cursor: pointer;
+}
+
+.remove:hover {
+  background: var(--rose-wash);
+  color: var(--rose);
+}
+
+.addSkill {
+  max-width: 380px;
+}
+
+.radios {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.radios legend {
+  margin-bottom: 4px;
+  padding: 0;
+  font-weight: 600;
+  font-size: var(--t-sm);
+}
+
+.radio {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  cursor: pointer;
+}
+
+.radio input {
+  margin-top: 4px;
+  accent-color: var(--ink);
+}
+
+.radio span {
+  display: grid;
+  font-size: var(--t-sm);
+}
+
+.radio small {
+  color: var(--ink-3);
+}
+
+@media (max-width: 760px) {
+  .top {
+    grid-template-columns: 1fr;
+  }
+
+  .row {
+    grid-template-columns: 1fr 36px;
+  }
+
+  .wide {
+    grid-column: auto;
+  }
+}

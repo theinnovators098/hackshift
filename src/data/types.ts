@@ -7,7 +7,11 @@ interface Owned {
   ownerId?: string
 }
 
-export type OpportunityKind = 'Internship' | 'Job' | 'Gig' | 'Co-founder'
+export type OpportunityKind = 'Internship' | 'Job' | 'Part-time' | 'Apprenticeship' | 'Contract' | 'Gig' | 'Co-founder'
+
+export type WorkMode = 'Remote' | 'Hybrid' | 'On-site'
+
+export type Experience = 'Fresher' | '1-3 years' | '3+ years'
 
 export interface Opportunity extends Owned {
   id: string
@@ -23,6 +27,9 @@ export interface Opportunity extends Owned {
   about: string
   work: string[]
   challengeId?: string
+  mode?: WorkMode
+  experience?: Experience
+  monthly?: number
 }
 
 export type Level = 'Beginner' | 'Intermediate' | 'Advanced'

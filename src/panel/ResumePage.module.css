@@ -1,0 +1,80 @@
+.sheet {
+  display: grid;
+  gap: 20px;
+  max-width: 800px;
+  padding: 48px 56px;
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  box-shadow: 0 16px 40px -24px rgba(27, 31, 59, 0.35);
+  color: #111;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.head {
+  padding-bottom: 16px;
+  border-bottom: 2px solid #111;
+}
+
+.head h1 {
+  font-size: 30px;
+  font-variation-settings: 'wdth' 110;
+  letter-spacing: -0.02em;
+}
+
+.headline {
+  margin-top: 4px;
+  font-size: 16px;
+}
+
+.contact {
+  margin-top: 8px;
+  color: #444;
+  font-size: 13px;
+  white-space: pre-wrap;
+}
+
+.sheet section {
+  display: grid;
+  gap: 6px;
+}
+
+.sheet h2 {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #8f5500;
+}
+
+.item {
+  display: grid;
+  gap: 2px;
+}
+
+.itemHead {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.itemHead .when {
+  margin-left: auto;
+  color: #555;
+  white-space: nowrap;
+}
+
+@media (max-width: 640px) {
+  .sheet {
+    padding: 24px 20px;
+  }
+}
+
+@media print {
+  .sheet {
+    max-width: none;
+    padding: 0;
+    border: 0;
+    box-shadow: none;
+  }
+}

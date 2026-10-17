@@ -101,6 +101,7 @@ interface Request {
   signal?: AbortSignal
   tools?: ToolDecl[]
   contents?: unknown[]
+  files?: { mimeType: string; data: string }[]
 }
 
 interface Part {
@@ -114,7 +115,7 @@ interface Payload {
   promptFeedback?: { blockReason?: string }
 }
 
-function body({ model = FAST, system, turns, schema, temperature, tools, contents }: Request) {
+function body({ model = FAST, system, turns, schema, temperature, tools, contents, files }: Request) {
   const generationConfig: Record<string, unknown> = {}
   if (temperature !== undefined) generationConfig.temperature = temperature
   if (model === SMART) generationConfig.thinkingConfig = { thinkingLevel: 'low' }
@@ -124,7 +125,15 @@ function body({ model = FAST, system, turns, schema, temperature, tools, content
   }
   return {
     systemInstruction: { parts: [{ text: system }] },
-    contents: contents ?? turns.map((t) => ({ role: t.role, parts: [{ text: t.text }] })),
+    contents:
+      contents ??
+      turns.map((t, i) => ({
+        role: t.role,
+        parts: [
+          ...(i === turns.length - 1 && files ? files.map((f) => ({ inlineData: { mimeType: f.mimeType, data: f.data } })) : []),
+          { text: t.text },
+        ],
+      })),
     generationConfig,
     ...(tools?.length ? { tools: [{ functionDeclarations: tools }] } : {}),
   }
@@ -282,7 +291,7 @@ function readCache(): Record<string, unknown> {
 }
 
 export async function askJson<T>(req: Request & { schema: object }): Promise<{ data: T; saved: boolean }> {
-  const id = hash(JSON.stringify([req.model, req.system, req.turns, req.schema]))
+  const id = hash(JSON.stringify([req.model, req.system, req.turns, req.schema, req.files?.map((f) => f.data.length)]))
   try {
     const data = JSON.parse(await askText(req)) as T
     const cache = readCache()

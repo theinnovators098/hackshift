@@ -3,9 +3,91 @@ import { opportunities } from '../data/opportunities'
 import { mentors, people } from '../data/people'
 import { schemes } from '../data/schemes'
 import { ventures } from '../data/ventures'
+import type { Experience, Opportunity, WorkMode } from '../data/types'
 import type { Account, Data } from './types'
 
 export const DEMO_PASSWORD = 'demo1234'
+
+const roleFacts: Record<string, { mode: WorkMode; experience?: Experience; monthly?: number }> = {
+  'tapri-frontend-intern': { mode: 'Remote', experience: 'Fresher', monthly: 18000 },
+  'haldi-content-gig': { mode: 'Remote', experience: 'Fresher', monthly: 8400 },
+  'pinwheel-ops-analyst': { mode: 'On-site', experience: '1-3 years', monthly: 40000 },
+  'chalo-kitab-cofounder': { mode: 'On-site' },
+  'ganit-ml-intern': { mode: 'Hybrid', experience: 'Fresher', monthly: 25000 },
+  'bunkar-brand-designer': { mode: 'Remote', experience: '1-3 years', monthly: 35000 },
+  'kheti-field-sales': { mode: 'On-site', experience: 'Fresher', monthly: 26700 },
+  'rasta-android-dev': { mode: 'On-site', experience: '1-3 years', monthly: 58000 },
+  'nukkad-marketing-intern': { mode: 'Hybrid', experience: 'Fresher', monthly: 12000 },
+  'dhaaga-cofounder-ops': { mode: 'On-site', experience: '3+ years' },
+}
+
+const moreRoles: Opportunity[] = [
+  {
+    id: 'ganit-weekend-tutor',
+    title: 'Weekend maths tutor (online, Hindi)',
+    company: 'Ganit Labs',
+    kind: 'Part-time',
+    city: 'Bengaluru',
+    remote: true,
+    mode: 'Remote',
+    experience: 'Fresher',
+    monthly: 9000,
+    pay: '₹450 per hour, about 5 hours a week',
+    skills: ['Hindi', 'Teaching', 'Maths'],
+    postedDaysAgo: 3,
+    closes: '12 Nov',
+    about:
+      'Ganit Labs builds a maths practice app for Class 6–10 students in government schools. Our model picks the next question based on what a student got wrong.',
+    work: [
+      'Teach two live doubt-clearing classes every Saturday and Sunday',
+      'Explain fractions and algebra in simple Hindi',
+      'Tell our content team which questions confuse students most',
+    ],
+  },
+  {
+    id: 'sunkiran-solar-apprentice',
+    title: 'Solar installation apprentice',
+    company: 'SunKiran Energy',
+    kind: 'Apprenticeship',
+    city: 'Jodhpur',
+    remote: false,
+    mode: 'On-site',
+    experience: 'Fresher',
+    monthly: 9000,
+    pay: '₹9,000 / month stipend',
+    skills: ['Electrical', 'Safety', 'Field work'],
+    postedDaysAgo: 2,
+    closes: '20 Nov',
+    about: 'SunKiran puts rooftop solar on homes and small shops across western Rajasthan. We train every installer ourselves.',
+    work: [
+      'Learn to install and test rooftop solar panels with a senior installer',
+      'Follow site safety rules on every job',
+      'Earn a certificate after twelve months of training',
+    ],
+  },
+  {
+    id: 'haldi-flutter-contract',
+    title: 'Flutter developer, 3-month contract',
+    company: 'Haldi Health',
+    kind: 'Contract',
+    city: 'Kochi',
+    remote: true,
+    mode: 'Remote',
+    experience: '1-3 years',
+    monthly: 70000,
+    pay: '₹70,000 / month for 3 months',
+    skills: ['Flutter', 'Dart', 'Firebase'],
+    postedDaysAgo: 5,
+    closes: '8 Nov',
+    about:
+      'Haldi Health runs teleconsults for families in small towns. Patients read our explainers before a call, so they need to be clear and calm.',
+    work: [
+      'Rebuild the appointment booking flow in Flutter',
+      'Make the app work on slow 3G connections',
+      'Hand over clean code and notes to our in-house developer',
+    ],
+  },
+]
 
 function dayLabel(offset: number) {
   const d = new Date()
@@ -143,7 +225,12 @@ export function seed(): Data {
     session: null,
     accounts,
     opportunities: [
-      ...opportunities.map((o) => (o.company === 'Tapri Pay' ? { ...o, ownerId: 'acc-tapri' } : o)),
+      ...opportunities.map((o) => ({
+        ...o,
+        ...roleFacts[o.id],
+        ...(o.company === 'Tapri Pay' ? { ownerId: 'acc-tapri' } : o.company === 'Pinwheel Logistics' ? { ownerId: 'acc-neha' } : {}),
+      })),
+      ...moreRoles,
       {
         id: 'tapri-support-marathi',
         title: 'Shopkeeper support associate (Marathi)',
@@ -162,11 +249,16 @@ export function seed(): Data {
           'Help new shops set up their first UPI QR code',
           'Write down the questions people ask most so we can fix the app',
         ],
+        mode: 'On-site',
+        experience: 'Fresher',
+        monthly: 23000,
         status: 'pending',
         ownerId: 'acc-tapri',
       },
     ],
-    challenges: challenges.map((c) => (c.company === 'Tapri Pay' ? { ...c, ownerId: 'acc-tapri' } : c)),
+    challenges: challenges.map((c) =>
+      c.company === 'Tapri Pay' ? { ...c, ownerId: 'acc-tapri' } : c.company === 'Pinwheel Logistics' ? { ...c, ownerId: 'acc-neha' } : c,
+    ),
     mentors: [
       ...mentors.map((m) => (m.id === 'meera-iyer' ? { ...m, ownerId: 'acc-meera' } : m)),
       {

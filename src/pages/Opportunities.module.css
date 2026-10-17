@@ -57,11 +57,29 @@
   accent-color: var(--ink);
 }
 
+.countRow {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px 16px;
+  margin: 20px 0 8px;
+}
+
 .count {
-  margin: 24px 0 8px;
   color: var(--ink-3);
   font-size: var(--t-sm);
   font-weight: 500;
+}
+
+.savedNote {
+  font-size: var(--t-sm);
+  color: var(--leaf);
+  font-weight: 500;
+}
+
+.savedNote a {
+  color: var(--ink);
 }
 
 .none {

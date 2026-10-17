@@ -1,12 +1,12 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
-import type { Challenge, Level, Opportunity, OpportunityKind } from '../data/types'
+import type { Challenge, Experience, Level, Opportunity, OpportunityKind, WorkMode } from '../data/types'
+import { jobKinds, modeOf, workModes } from '../lib/jobs'
 import { indianCities } from '../lib/match'
 import { useStore } from '../store/AppStore'
 import { commaList, lines, PanelHead, slug, panelStyles as styles } from './ui'
 
-const kinds: OpportunityKind[] = ['Internship', 'Job', 'Gig', 'Co-founder']
 const levels: Level[] = ['Beginner', 'Intermediate', 'Advanced']
 
 function Missing({ backTo, what }: { backTo: string; what: string }) {
@@ -31,7 +31,9 @@ export function RoleEditor({ backTo }: { backTo: string }) {
   const [title, setTitle] = useState(existing?.title ?? '')
   const [kind, setKind] = useState<OpportunityKind>(existing?.kind ?? 'Internship')
   const [city, setCity] = useState(existing?.city ?? account?.profile.city ?? '')
-  const [remote, setRemote] = useState(existing?.remote ?? false)
+  const [mode, setMode] = useState<WorkMode>(existing ? modeOf(existing) : 'On-site')
+  const [experience, setExperience] = useState<Experience | ''>(existing?.experience ?? '')
+  const [monthly, setMonthly] = useState(existing?.monthly ? String(existing.monthly) : '')
   const [pay, setPay] = useState(existing?.pay ?? '')
   const [closes, setCloses] = useState(existing?.closes ?? '')
   const [skills, setSkills] = useState(existing?.skills.join(', ') ?? '')
@@ -58,7 +60,10 @@ export function RoleEditor({ backTo }: { backTo: string }) {
       company,
       kind,
       city: city.trim(),
-      remote,
+      remote: mode !== 'On-site',
+      mode,
+      experience: experience || undefined,
+      monthly: Number(monthly) > 0 ? Math.round(Number(monthly)) : undefined,
       pay: pay.trim(),
       closes: closes.trim() || 'Open',
       skills: commaList(skills),
@@ -93,7 +98,7 @@ export function RoleEditor({ backTo }: { backTo: string }) {
           <label className="field">
             <span>Type</span>
             <select className="input" value={kind} onChange={(e) => setKind(e.target.value as OpportunityKind)}>
-              {kinds.map((k) => (
+              {jobKinds.map((k) => (
                 <option key={k}>{k}</option>
               ))}
             </select>
@@ -118,10 +123,30 @@ export function RoleEditor({ backTo }: { backTo: string }) {
             <input className="input" value={closes} onChange={(e) => setCloses(e.target.value)} placeholder="30 Nov, or leave empty" />
           </label>
         </div>
-        <label className={styles.check}>
-          <input type="checkbox" checked={remote} onChange={(e) => setRemote(e.target.checked)} />
-          People can do this role remotely
-        </label>
+        <div className={styles.formRow3}>
+          <label className="field">
+            <span>Work mode</span>
+            <select className="input" value={mode} onChange={(e) => setMode(e.target.value as WorkMode)}>
+              {workModes.map((m) => (
+                <option key={m}>{m}</option>
+              ))}
+            </select>
+          </label>
+          <label className="field">
+            <span>Experience</span>
+            <select className="input" value={experience} onChange={(e) => setExperience(e.target.value as Experience | '')}>
+              <option value="">Not fixed</option>
+              <option value="Fresher">Fresher</option>
+              <option value="1-3 years">1 to 3 years</option>
+              <option value="3+ years">3 years or more</option>
+            </select>
+          </label>
+          <label className="field">
+            <span>Monthly pay in ₹</span>
+            <input className="input" type="number" min={0} value={monthly} onChange={(e) => setMonthly(e.target.value)} placeholder="18000" />
+            <small>Used for pay filters. Leave empty for equity-only roles.</small>
+          </label>
+        </div>
         <label className="field">
           <span>Skills</span>
           <input className="input" value={skills} onChange={(e) => setSkills(e.target.value)} placeholder="React, CSS, Figma" />

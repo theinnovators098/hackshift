@@ -1,6 +1,6 @@
 import { roleInfo } from '../data/roles'
 import type { Challenge, Mentor, Opportunity, Scheme, Stage, Venture } from '../data/types'
-import type { Profile, Submission } from '../store/AppStore'
+import type { CareerPlan, Profile, Submission } from '../store/types'
 import { languageRule, type Lang, type Turn } from './millisa'
 
 const persona = [
@@ -357,3 +357,135 @@ export function preReviewRequest(c: Challenge, link: string, note: string, lang:
     schema: preReviewSchema,
   }
 }
+
+export interface ResumeRead {
+  headline: string
+  about: string
+  skills: string[]
+  education: { school: string; degree: string; years: string }[]
+  work: { role: string; org: string; years: string; summary: string }[]
+  certificates: { name: string; issuer: string; year: string }[]
+  links: { github: string; portfolio: string; linkedin: string; website: string }
+}
+
+const row = (fields: string[]) => ({
+  type: 'array',
+  items: { type: 'object', properties: Object.fromEntries(fields.map((f) => [f, { type: 'string' }])), required: fields },
+})
+
+export const resumeSchema = {
+  type: 'object',
+  properties: {
+    headline: { type: 'string', description: 'One line on who they are, under 70 characters. Empty if unclear.' },
+    about: { type: 'string', description: 'Two or three sentences in first person, only from facts in the resume' },
+    skills: list('Skills named in the resume, short names like React or Excel'),
+    education: row(['school', 'degree', 'years']),
+    work: row(['role', 'org', 'years', 'summary']),
+    certificates: row(['name', 'issuer', 'year']),
+    links: {
+      type: 'object',
+      properties: { github: { type: 'string' }, portfolio: { type: 'string' }, linkedin: { type: 'string' }, website: { type: 'string' } },
+      required: ['github', 'portfolio', 'linkedin', 'website'],
+    },
+  },
+  required: ['headline', 'about', 'skills', 'education', 'work', 'certificates', 'links'],
+}
+
+export function resumeRequest() {
+  return {
+    system: system(
+      'en',
+      'Read the attached resume and pull out the facts into the given fields.',
+      'Copy facts exactly. Never guess or add anything that is not written in the resume. Use an empty string or an empty list when something is missing.',
+      'Write years like "2021 to 2025" or "2024 to now". Keep work summaries to one sentence.',
+    ),
+    turns: ask('Here is my resume. Pull out my details.'),
+    schema: resumeSchema,
+  }
+}
+
+export function summaryRequest(profile: Profile, lang: Lang) {
+  return {
+    system: system(
+      lang,
+      'Write the "About" paragraph for this person\'s HackShift profile, in first person, 40 to 70 words.',
+      'Use only facts from their details. No clichés such as passionate, hardworking or go-getter. End with what they are looking for next.',
+      'Return only the paragraph.',
+    ),
+    turns: ask(
+      [
+        profileBlock(profile),
+        profile.headline && `Headline: ${profile.headline}`,
+        profile.work?.length && `Work: ${profile.work.map((w) => `${w.role} at ${w.org} (${w.years}): ${w.summary}`).join('; ')}`,
+        profile.education?.length && `Education: ${profile.education.map((e) => `${e.degree}, ${e.school} (${e.years})`).join('; ')}`,
+      ]
+        .filter(Boolean)
+        .join('\n'),
+    ),
+  }
+}
+
+export const planSchema = {
+  type: 'object',
+  properties: {
+    have: list('Skills and experience they already have that help with the target, up to five'),
+    gaps: {
+      type: 'array',
+      maxItems: 5,
+      items: {
+        type: 'object',
+        properties: {
+          skill: { type: 'string' },
+          why: { type: 'string', description: 'Why the target role needs it, one sentence' },
+          how: { type: 'string', description: 'A free or low-cost way to learn it, such as NPTEL, freeCodeCamp or building a small project. No links.' },
+        },
+        required: ['skill', 'why', 'how'],
+      },
+    },
+    weeks: {
+      type: 'array',
+      minItems: 4,
+      maxItems: 8,
+      items: {
+        type: 'object',
+        properties: { week: { type: 'integer' }, focus: { type: 'string' }, tasks: list('Two or three concrete tasks for the week') },
+        required: ['week', 'focus', 'tasks'],
+      },
+    },
+    challengeIds: list('Up to three challenge ids from the HackShift list that build the missing skills'),
+    mentorIds: list('Up to two mentor ids from the HackShift list who could help'),
+  },
+  required: ['have', 'gaps', 'weeks', 'challengeIds', 'mentorIds'],
+}
+
+export function planRequest(profile: Profile, target: string, site: Pick<Site, 'challenges' | 'mentors' | 'opportunities'>, lang: Lang) {
+  return {
+    system: system(
+      lang,
+      'Make a realistic career plan for an Indian student or early-career person who can give 6 to 10 hours a week.',
+      'Be honest about the gap. Prefer free resources and real projects. Only use challenge and mentor ids from the lists given.',
+      'In the week tasks, name challenges and mentors by their title or name, never by their id.',
+    ),
+    turns: ask(
+      [
+        `TARGET ROLE: ${target}`,
+        '',
+        'THE PERSON',
+        profileBlock(profile),
+        profile.work?.length ? `Work: ${profile.work.map((w) => `${w.role} at ${w.org}`).join('; ')}` : '',
+        '',
+        'CHALLENGES',
+        ...site.challenges.map((c) => `- ${c.id}: ${c.title} (${c.skills.join(', ')}, ${c.hours} hours)`),
+        '',
+        'MENTORS',
+        ...site.mentors.map((m) => `- ${m.id}: ${m.name}, ${m.title}. Topics: ${m.expertise.join(', ')}`),
+        '',
+        'ROLES ON HACKSHIFT',
+        ...site.opportunities.map((o) => `- ${o.title} at ${o.company}: ${o.skills.join(', ')}`),
+      ].join('\n'),
+    ),
+    schema: planSchema,
+  }
+}
+
+export type PlanReply = Omit<CareerPlan, 'target' | 'madeOn'>

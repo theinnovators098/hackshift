@@ -1,44 +1,47 @@
 import { useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Bookmark, BookmarkCheck, Search, Zap } from 'lucide-react'
+import { Link, useSearchParams } from 'react-router-dom'
+import { Bell, Bookmark, BookmarkCheck, Search, Zap } from 'lucide-react'
 import PageHead from '../components/PageHead'
-import type { OpportunityKind } from '../data/types'
+import type { Experience, OpportunityKind, WorkMode } from '../data/types'
+import { jobKinds, matches, modeOf, payFloors, workModes } from '../lib/jobs'
 import { overlap } from '../lib/match'
 import Verified from '../components/Verified'
 import { useStore } from '../store/AppStore'
 import styles from './Opportunities.module.css'
 
-const kinds: (OpportunityKind | 'All')[] = ['All', 'Internship', 'Job', 'Gig', 'Co-founder']
+const kinds: (OpportunityKind | 'All')[] = ['All', ...jobKinds]
 
 export default function Opportunities() {
-  const { profile, saved, toggleSaved, opportunities, isVerified } = useStore()
-  const [kind, setKind] = useState<OpportunityKind | 'All'>('All')
-  const [query, setQuery] = useState('')
-  const [city, setCity] = useState('')
-  const [remoteOnly, setRemoteOnly] = useState(false)
-  const [mineOnly, setMineOnly] = useState(false)
+  const { profile, saved, toggleSaved, opportunities, isVerified, account, saveSearch, savedSearches } = useStore()
+  const [params] = useSearchParams()
+  const [kind, setKind] = useState<OpportunityKind | 'All'>((params.get('kind') as OpportunityKind) || 'All')
+  const [query, setQuery] = useState(params.get('q') ?? '')
+  const [city, setCity] = useState(params.get('city') ?? '')
+  const [mode, setMode] = useState<WorkMode | ''>((params.get('mode') as WorkMode) || '')
+  const [experience, setExperience] = useState<Experience | ''>((params.get('exp') as Experience) || '')
+  const [minPay, setMinPay] = useState(Number(params.get('pay')) || 0)
+  const [mineOnly, setMineOnly] = useState(params.get('mine') === '1')
+  const [savedNote, setSavedNote] = useState(false)
+  const filters = { query, kind, city, mode, experience, minPay, mineOnly }
+  const canSave = !!account && account.kind === 'seeker'
 
   const cities = useMemo(() => Array.from(new Set(opportunities.map((o) => o.city))).sort(), [opportunities])
 
-  const results = opportunities.filter((o) => {
-    if (kind !== 'All' && o.kind !== kind) return false
-    if (city && o.city !== city) return false
-    if (remoteOnly && !o.remote) return false
-    if (mineOnly && profile && overlap(o.skills, profile.skills).length === 0) return false
-    if (query) {
-      const q = query.toLowerCase()
-      const text = [o.title, o.company, o.city, ...o.skills].join(' ').toLowerCase()
-      if (!text.includes(q)) return false
-    }
-    return true
-  })
+  const results = opportunities.filter((o) => matches(o, filters, profile))
 
   const clear = () => {
     setKind('All')
     setQuery('')
     setCity('')
-    setRemoteOnly(false)
+    setMode('')
+    setExperience('')
+    setMinPay(0)
     setMineOnly(false)
+  }
+
+  const save = () => {
+    saveSearch(filters)
+    setSavedNote(true)
   }
 
   return (
@@ -77,9 +80,36 @@ export default function Opportunities() {
                 ))}
               </select>
             </label>
-            <label className={styles.check}>
-              <input type="checkbox" checked={remoteOnly} onChange={(e) => setRemoteOnly(e.target.checked)} />
-              Remote ok
+            <label>
+              <span className="visually-hidden">Work mode</span>
+              <select className="input" value={mode} onChange={(e) => setMode(e.target.value as WorkMode | '')}>
+                <option value="">Any work mode</option>
+                {workModes.map((m) => (
+                  <option key={m}>{m}</option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <div className={styles.controls}>
+            <label>
+              <span className="visually-hidden">Experience</span>
+              <select className="input" value={experience} onChange={(e) => setExperience(e.target.value as Experience | '')}>
+                <option value="">Any experience</option>
+                <option value="Fresher">Fresher</option>
+                <option value="1-3 years">1 to 3 years</option>
+                <option value="3+ years">3 years or more</option>
+              </select>
+            </label>
+            <label>
+              <span className="visually-hidden">Pay</span>
+              <select className="input" value={minPay} onChange={(e) => setMinPay(Number(e.target.value))}>
+                <option value={0}>Any pay</option>
+                {payFloors.map((p) => (
+                  <option key={p} value={p}>
+                    ₹{p.toLocaleString('en-IN')}+ a month
+                  </option>
+                ))}
+              </select>
             </label>
             {profile && (
               <label className={styles.check}>
@@ -90,9 +120,21 @@ export default function Opportunities() {
           </div>
         </div>
 
-        <p className={styles.count} aria-live="polite">
-          {results.length} {results.length === 1 ? 'opportunity' : 'opportunities'}
-        </p>
+        <div className={styles.countRow}>
+          <p className={styles.count} aria-live="polite">
+            {results.length} {results.length === 1 ? 'opportunity' : 'opportunities'}
+          </p>
+          {canSave &&
+            (savedNote ? (
+              <p className={styles.savedNote}>
+                Search saved. We will tell you when a new role matches. <Link to="/panel/saved">See saved searches</Link>
+              </p>
+            ) : (
+              <button type="button" className="btn btn-ghost btn-sm" onClick={save} disabled={savedSearches.length >= 10}>
+                <Bell size={15} /> Save this search
+              </button>
+            ))}
+        </div>
 
         {results.length === 0 ? (
           <div className={styles.none}>
@@ -115,7 +157,7 @@ export default function Opportunities() {
                     <p className={styles.company}>
                       {o.company}
                       {isVerified(o.ownerId) && <Verified />}, {o.city}
-                      {o.remote && <span className="tag">Remote ok</span>}
+                      <span className="tag">{modeOf(o)}</span>
                     </p>
                     <h2 className={styles.title}>
                       <Link to={`/opportunities/${o.id}`}>{o.title}</Link>

@@ -39,6 +39,7 @@ export default function Profile() {
         </span>
         <div className={styles.who}>
           <h1>{profile.name}</h1>
+          {profile.headline && <p className={styles.headline}>{profile.headline}</p>}
           <ul className={styles.facts}>
             <li>
               <MapPin size={16} aria-hidden="true" /> {profile.city}
@@ -57,17 +58,61 @@ export default function Profile() {
             ))}
           </div>
         </div>
-        <Link to="/start" className="btn btn-ghost btn-sm">
+        <Link to="/panel/profile" className="btn btn-ghost btn-sm">
           <Pencil size={14} /> Edit
         </Link>
       </header>
 
       <div className={styles.grid}>
         <div className={styles.main}>
+          {profile.about && (
+            <section>
+              <h2>About</h2>
+              <p className={styles.about}>{profile.about}</p>
+            </section>
+          )}
+
           {profile.goal && (
             <section>
               <h2>Looking for</h2>
               <p className={styles.goal}>{profile.goal}</p>
+            </section>
+          )}
+
+          {profile.work && profile.work.length > 0 && (
+            <section>
+              <h2>Work and projects</h2>
+              <ul className={styles.timeline}>
+                {profile.work.map((w, i) => (
+                  <li key={i}>
+                    <p className={styles.badgeTitle}>
+                      {w.role}
+                      {w.org && `, ${w.org}`}
+                    </p>
+                    <p className={styles.muted}>
+                      {w.years}
+                      {w.summary && `. ${w.summary}`}
+                    </p>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {profile.education && profile.education.length > 0 && (
+            <section>
+              <h2>Education</h2>
+              <ul className={styles.timeline}>
+                {profile.education.map((e, i) => (
+                  <li key={i}>
+                    <p className={styles.badgeTitle}>{e.degree}</p>
+                    <p className={styles.muted}>
+                      {e.school}
+                      {e.years && `, ${e.years}`}
+                    </p>
+                  </li>
+                ))}
+              </ul>
             </section>
           )}
 

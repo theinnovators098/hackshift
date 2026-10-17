@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowLeft, Bookmark, BookmarkCheck, CalendarClock, CheckCircle2, MapPin, Wallet, Zap } from 'lucide-react'
+import { ArrowLeft, Bookmark, BookmarkCheck, BriefcaseBusiness, CalendarClock, CheckCircle2, MapPin, Wallet, Zap } from 'lucide-react'
+import { modeOf } from '../lib/jobs'
 import { overlap } from '../lib/match'
 import DraftNote from '../millisa/DraftNote'
 import FitCheck from '../millisa/FitCheck'
@@ -53,9 +54,13 @@ export default function OpportunityDetail() {
         <h1>{o.title}</h1>
         <ul className={styles.facts}>
           <li>
-            <MapPin size={16} aria-hidden="true" /> {o.city}
-            {o.remote && ', remote ok'}
+            <MapPin size={16} aria-hidden="true" /> {o.city}, {modeOf(o).toLowerCase()}
           </li>
+          {o.experience && (
+            <li>
+              <BriefcaseBusiness size={16} aria-hidden="true" /> {o.experience === 'Fresher' ? 'Freshers welcome' : `${o.experience} of experience`}
+            </li>
+          )}
           <li>
             <Wallet size={16} aria-hidden="true" /> <span className="num">{o.pay}</span>
           </li>

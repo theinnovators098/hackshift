@@ -1,11 +1,15 @@
 import { Link, Navigate, Route, Routes } from 'react-router-dom'
-import { Bookmark, CalendarDays, LayoutDashboard, Lightbulb, Send, UserCog, Zap } from 'lucide-react'
+import { Bell, Bookmark, CalendarDays, Compass, LayoutDashboard, Lightbulb, Send, UserCog, UserRound, Zap } from 'lucide-react'
+import { toParams } from '../lib/jobs'
+import CareerPlan from './CareerPlan'
+import ProfileEditor from './ProfileEditor'
+import ResumePage from './ResumePage'
 import Dashboard from '../pages/Dashboard'
 import { useStore, type ApplicationStatus } from '../store/AppStore'
 import AccountSettings from './AccountSettings'
 import { sharedRoutes, useSharedNav } from './shared'
 import PanelShell from './PanelShell'
-import { Empty, PanelHead, Status, panelStyles as styles } from './ui'
+import { Empty, PanelHead, Section, Status, panelStyles as styles } from './ui'
 
 const nextStep: Record<ApplicationStatus, string> = {
   Sent: 'Waiting for the startup to read it. Most reply within a week.',
@@ -165,52 +169,75 @@ function Sessions() {
 }
 
 function Saved() {
-  const { saved, data, toggleSaved } = useStore()
+  const { saved, data, toggleSaved, savedSearches, deleteSearch } = useStore()
   const items = saved.map((id) => data.opportunities.find((o) => o.id === id)).filter((o) => !!o)
   return (
     <>
-      <PanelHead title="Saved" intro="Roles you want to come back to." />
-      {items.length === 0 ? (
-        <Empty title="Nothing saved" action={<Link to="/opportunities" className="btn btn-primary btn-sm">Browse opportunities</Link>}>
-          Press the bookmark on any role to keep it here.
-        </Empty>
-      ) : (
-        <div className={styles.tableWrap}>
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th>Role</th>
-                <th>Pay</th>
-                <th>Closes</th>
-                <th className={styles.actions}>
-                  <span className="visually-hidden">Actions</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {items.map((o) => (
-                <tr key={o.id}>
-                  <td>
-                    <Link to={`/opportunities/${o.id}`} className={styles.cellTitle}>
-                      {o.title}
-                    </Link>
-                    <p className={styles.cellSub}>
-                      {o.company}, {o.city}
-                    </p>
-                  </td>
-                  <td className="num">{o.pay}</td>
-                  <td>{o.closes}</td>
-                  <td className={styles.actions}>
-                    <button type="button" className={styles.link} onClick={() => toggleSaved(o.id)}>
-                      Remove
-                    </button>
-                  </td>
+      <PanelHead title="Saved" intro="Roles you want to come back to, and searches that tell you when something new matches." />
+      <Section title="Saved searches">
+        {savedSearches.length === 0 ? (
+          <Empty title="No saved searches" action={<Link to="/opportunities" className="btn btn-ghost btn-sm">Search roles</Link>}>
+            Set your filters on the opportunities page and press “Save this search”. You get a notification when a new role matches.
+          </Empty>
+        ) : (
+          <ul className={styles.feed}>
+            {savedSearches.map((s) => (
+              <li key={s.id}>
+                <span>
+                  <Bell size={14} aria-hidden="true" /> <Link to={`/opportunities?${toParams(s.filters)}`}>{s.label}</Link>
+                  <span className={styles.cellSub}> Saved {s.createdOn}</span>
+                </span>
+                <button type="button" className={styles.link} onClick={() => deleteSearch(s.id)}>
+                  Stop alerts
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Section>
+      <Section title="Saved roles">
+        {items.length === 0 ? (
+          <Empty title="Nothing saved" action={<Link to="/opportunities" className="btn btn-primary btn-sm">Browse opportunities</Link>}>
+            Press the bookmark on any role to keep it here.
+          </Empty>
+        ) : (
+          <div className={styles.tableWrap}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Role</th>
+                  <th>Pay</th>
+                  <th>Closes</th>
+                  <th className={styles.actions}>
+                    <span className="visually-hidden">Actions</span>
+                  </th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      )}
+              </thead>
+              <tbody>
+                {items.map((o) => (
+                  <tr key={o.id}>
+                    <td>
+                      <Link to={`/opportunities/${o.id}`} className={styles.cellTitle}>
+                        {o.title}
+                      </Link>
+                      <p className={styles.cellSub}>
+                        {o.company}, {o.city}
+                      </p>
+                    </td>
+                    <td className="num">{o.pay}</td>
+                    <td>{o.closes}</td>
+                    <td className={styles.actions}>
+                      <button type="button" className={styles.link} onClick={() => toggleSaved(o.id)}>
+                        Remove
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Section>
     </>
   )
 }
@@ -270,9 +297,11 @@ export default function SeekerPanel() {
   const shared = useSharedNav('/panel')
   const nav = [
     { to: '/panel', label: 'Overview', icon: LayoutDashboard, end: true },
+    { to: '/panel/profile', label: 'Profile and resume', icon: UserRound },
     { to: '/panel/applications', label: 'Applications', icon: Send, count: moving },
     { to: '/panel/challenges', label: 'Challenges', icon: Zap },
     { to: '/panel/sessions', label: 'Mentor sessions', icon: CalendarDays },
+    { to: '/panel/plan', label: 'Career plan', icon: Compass },
     { to: '/panel/saved', label: 'Saved', icon: Bookmark },
     ...(founder ? [{ to: '/panel/ventures', label: 'My ventures', icon: Lightbulb }] : []),
     ...shared,
@@ -283,6 +312,9 @@ export default function SeekerPanel() {
     <PanelShell nav={nav} publicLink={{ to: '/profile', label: 'My public profile' }}>
       <Routes>
         <Route index element={<Dashboard />} />
+        <Route path="profile" element={<ProfileEditor />} />
+        <Route path="resume" element={<ResumePage />} />
+        <Route path="plan" element={<CareerPlan />} />
         <Route path="applications" element={<Applications />} />
         <Route path="challenges" element={<ChallengesDone />} />
         <Route path="sessions" element={<Sessions />} />

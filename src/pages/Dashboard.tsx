@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { CalendarDays, Check, MapPin, Pencil } from 'lucide-react'
 import { roleInfo } from '../data/roles'
 import { matchChallenges, matchOpportunities, greeting } from '../lib/match'
+import { profileScore } from '../lib/profileScore'
 import { useStore } from '../store/AppStore'
 import styles from './Dashboard.module.css'
 
@@ -28,8 +29,9 @@ export default function Dashboard() {
   const isFounder = profile.roles.includes('founder') || profile.roles.includes('startup')
   const isHiring = profile.roles.includes('recruiter') || profile.roles.includes('startup')
 
+  const completion = profileScore(profile, !!store.account?.resume).score
   const checklist = [
-    { done: profile.skills.length >= 3, text: 'Add at least three skills', to: '/start' },
+    { done: completion >= 80, text: `Complete your profile (${completion}% now)`, to: '/panel/profile' },
     { done: submissions.length > 0, text: 'Submit your first challenge', to: '/challenges' },
     { done: bookings.length > 0, text: 'Book a session with a mentor', to: '/mentors' },
     { done: applications.length > 0, text: 'Apply to an opportunity', to: '/opportunities' },
@@ -58,7 +60,7 @@ export default function Dashboard() {
           <Link to="/profile" className="btn btn-ghost btn-sm">
             View public profile
           </Link>
-          <Link to="/start" className="btn btn-ghost btn-sm">
+          <Link to="/panel/profile" className="btn btn-ghost btn-sm">
             <Pencil size={14} /> Edit profile
           </Link>
         </div>
