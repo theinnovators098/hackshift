@@ -1,0 +1,133 @@
+.board {
+  background: var(--ink);
+  color: #fff;
+  border-radius: var(--r-panel);
+  padding: 22px 24px 8px;
+  box-shadow: 0 24px 48px -24px rgba(27, 31, 59, 0.55);
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #353a63;
+}
+
+.top h2 {
+  font-size: var(--t-md);
+  font-weight: 600;
+  color: #c9cce0;
+}
+
+.live {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--t-sm);
+  color: var(--marigold);
+  font-weight: 500;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--marigold);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas:
+    'who via'
+    'move move';
+  gap: 2px 12px;
+  padding: 14px 0;
+  border-bottom: 1px solid #2b3056;
+  animation: enter 0.5s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.row:last-child {
+  border-bottom: 0;
+}
+
+.who {
+  grid-area: who;
+  font-size: var(--t-sm);
+  color: #9196b5;
+}
+
+.via {
+  grid-area: via;
+  align-self: start;
+  font-size: var(--t-xs);
+  font-weight: 600;
+  color: var(--ink);
+  background: var(--marigold);
+  padding: 1px 8px;
+  border-radius: var(--r-tag);
+}
+
+.move {
+  grid-area: move;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 10px;
+  line-height: 1.25;
+}
+
+.from {
+  font-variation-settings: 'wdth' 75;
+  color: #b4b8d2;
+  font-size: var(--t-md);
+}
+
+.arrow {
+  align-self: center;
+  color: var(--marigold);
+  flex: none;
+}
+
+.to {
+  font-variation-settings: 'wdth' 118;
+  font-weight: 700;
+  font-size: var(--t-lg);
+  letter-spacing: -0.01em;
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+    background: rgba(244, 163, 0, 0.12);
+  }
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.35;
+  }
+}
+
+@media (max-width: 480px) {
+  .board {
+    padding: 18px 16px 4px;
+  }
+
+  .to {
+    font-size: var(--t-md);
+  }
+
+  .from {
+    font-size: var(--t-base);
+  }
+}

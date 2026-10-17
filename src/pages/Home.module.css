@@ -1,0 +1,404 @@
+.hero {
+  display: grid;
+  grid-template-columns: 1.1fr 1fr;
+  gap: 56px;
+  align-items: center;
+  padding-block: 72px 88px;
+}
+
+.headline {
+  font-size: clamp(2.75rem, 6vw, 4.25rem);
+  font-weight: 800;
+  font-variation-settings: 'wdth' 110;
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+}
+
+.lede {
+  margin-top: 24px;
+  max-width: 52ch;
+  font-size: var(--t-md);
+  color: var(--ink-2);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 32px;
+}
+
+.proof {
+  margin-top: 28px;
+  font-size: var(--t-sm);
+  color: var(--ink-3);
+}
+
+.proof strong {
+  color: var(--ink);
+}
+
+.section {
+  padding-top: 96px;
+}
+
+.sectionTitle {
+  font-size: clamp(var(--t-2xl), 4vw, var(--t-3xl));
+  font-variation-settings: 'wdth' 112;
+  letter-spacing: -0.02em;
+}
+
+.roles {
+  list-style: none;
+  margin: 32px 0 0;
+  padding: 0;
+  border-top: 2px solid var(--ink);
+}
+
+.role {
+  display: grid;
+  grid-template-columns: 280px 1fr auto;
+  gap: 24px;
+  align-items: baseline;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.role h3 {
+  font-size: var(--t-xl);
+  font-variation-settings: 'wdth' 108;
+}
+
+.role p {
+  color: var(--ink-2);
+  max-width: 58ch;
+}
+
+.role a {
+  font-weight: 600;
+  text-decoration-color: var(--marigold);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+  white-space: nowrap;
+}
+
+.role a:hover {
+  color: var(--marigold-deep);
+}
+
+.band {
+  margin-top: 96px;
+  background: var(--surface);
+  border-block: 1px solid var(--line);
+}
+
+.how {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 64px;
+  padding-block: 72px;
+}
+
+.howIntro > p {
+  margin-top: 14px;
+  color: var(--ink-2);
+  font-size: var(--t-md);
+  max-width: 36ch;
+}
+
+.example {
+  display: grid;
+  gap: 6px;
+  margin-top: 32px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--marigold);
+  border-radius: var(--r-control);
+  background: var(--page);
+  text-decoration: none;
+  max-width: 420px;
+}
+
+.example:hover {
+  border-color: var(--ink-3);
+  border-left-color: var(--marigold);
+}
+
+.exampleCompany {
+  font-size: var(--t-sm);
+  color: var(--ink-3);
+  font-weight: 500;
+}
+
+.exampleTitle {
+  font-weight: 700;
+  font-size: var(--t-lg);
+  line-height: 1.25;
+}
+
+.exampleMeta {
+  display: flex;
+  gap: 16px;
+  margin-top: 6px;
+  font-size: var(--t-sm);
+  color: var(--ink-2);
+}
+
+.exampleMeta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+}
+
+.steps li {
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 16px;
+  padding-bottom: 28px;
+  position: relative;
+}
+
+.steps li:not(:last-child)::before {
+  content: '';
+  position: absolute;
+  left: 19px;
+  top: 44px;
+  bottom: 6px;
+  width: 2px;
+  background: var(--line);
+}
+
+.stepNum {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--ink);
+  font-weight: 700;
+  font-variation-settings: 'wdth' 120;
+}
+
+.steps li:last-child .stepNum {
+  background: var(--marigold);
+  border-color: var(--marigold);
+}
+
+.steps h3 {
+  font-size: var(--t-lg);
+  margin-top: 8px;
+}
+
+.steps p {
+  margin-top: 6px;
+  color: var(--ink-2);
+  max-width: 48ch;
+}
+
+.ventureHead {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: end;
+}
+
+.ventureHead p {
+  color: var(--ink-2);
+  max-width: 50ch;
+}
+
+.track {
+  list-style: none;
+  margin: 36px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.track li {
+  padding: 20px 20px 22px 0;
+  border-top: 6px solid var(--ink);
+  margin-right: 4px;
+}
+
+.track li h3 {
+  font-size: var(--t-xl);
+  font-variation-settings: 'wdth' 115;
+}
+
+.track li p {
+  margin-top: 6px;
+  color: var(--ink-2);
+  font-size: var(--t-sm);
+  max-width: 28ch;
+}
+
+.track .trackDone {
+  border-top-color: var(--marigold);
+}
+
+.story {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr auto;
+  gap: 32px;
+  align-items: start;
+  margin-top: 16px;
+  padding: 24px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--r-panel);
+}
+
+.storyName {
+  font-weight: 700;
+  font-size: var(--t-lg);
+}
+
+.storyLine {
+  margin-top: 4px;
+  color: var(--ink-2);
+}
+
+.story ul {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+}
+
+.story li::marker {
+  color: var(--marigold);
+}
+
+.storyActions {
+  display: grid;
+  gap: 8px;
+}
+
+.citiesIntro {
+  margin-top: 12px;
+  color: var(--ink-2);
+  max-width: 60ch;
+}
+
+.cities {
+  margin-top: 28px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 28px;
+  font-size: clamp(var(--t-xl), 3.6vw, var(--t-3xl));
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+.cities span:nth-child(3n + 1) {
+  font-variation-settings: 'wdth' 125;
+}
+
+.cities span:nth-child(3n + 2) {
+  font-variation-settings: 'wdth' 80;
+  color: var(--ink-2);
+}
+
+.cities span:nth-child(3n) {
+  font-variation-settings: 'wdth' 100;
+  font-weight: 500;
+}
+
+.cities sup {
+  font-size: var(--t-sm);
+  font-weight: 600;
+  color: var(--marigold-deep);
+  margin-left: 3px;
+  letter-spacing: 0;
+  font-variation-settings: 'wdth' 100;
+}
+
+.close {
+  margin-top: 96px;
+  padding-block: 56px;
+  background: linear-gradient(var(--ink), var(--ink)) top center / calc(100% - 2 * var(--gutter)) 2px no-repeat;
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+}
+
+.close h2 {
+  font-size: clamp(var(--t-2xl), 4.4vw, var(--t-4xl));
+  font-variation-settings: 'wdth' 118;
+  letter-spacing: -0.03em;
+  max-width: 18ch;
+}
+
+.close p {
+  color: var(--ink-2);
+  font-size: var(--t-md);
+  margin-bottom: 12px;
+}
+
+@media (max-width: 960px) {
+  .hero,
+  .how,
+  .ventureHead {
+    grid-template-columns: 1fr;
+  }
+
+  .hero {
+    gap: 40px;
+    padding-block: 40px 56px;
+  }
+
+  .how {
+    gap: 40px;
+    padding-block: 56px;
+  }
+
+  .ventureHead {
+    gap: 12px;
+  }
+
+  .role {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .role a {
+    margin-top: 6px;
+  }
+
+  .track {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .story {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .storyActions {
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .section {
+    padding-top: 72px;
+  }
+}
+
+@media (max-width: 480px) {
+  .track {
+    grid-template-columns: 1fr;
+  }
+
+  .track li {
+    padding-right: 0;
+  }
+}
