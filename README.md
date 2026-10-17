@@ -24,6 +24,34 @@ HackShift puts job seekers, founders, startups, mentors and recruiters on one pl
 | Government schemes | Answer three questions to see which schemes fit you, such as Startup India Seed Fund, MUDRA and Stand-Up India. |
 | Dashboard | Changes with your role: matched roles, challenge status, ventures, sessions and a progress checklist. |
 
+## Millisa, the HackShift assistant
+
+Millisa is built into the pages people already use. It replies in English or Hindi.
+
+| Where | What Millisa does |
+| --- | --- |
+| Every page | **Ask Millisa** chat. It knows every role, challenge, mentor, venture and scheme on HackShift and links straight to them. |
+| Opportunity page | **Check my fit** gives an honest verdict, what you have, what is missing and one thing to do first. |
+| Apply form | **Draft with Millisa** writes a short application note from your profile, without inventing experience. |
+| Practice interview | Five questions written for the role. Millisa scores each answer and shows a stronger version. |
+| Post your idea | **Check with Millisa** reviews the idea, the stage, the questions people will ask and three cheap ways to test it. |
+| Challenge page | **Pre-review my work** checks your link and note against the brief before you submit. |
+
+Answers to the checks are saved in the browser, so if the internet drops during a demo, Millisa shows the answer it gave earlier for the same question and says so.
+
+### Connecting Millisa
+
+Millisa needs an access key. The key is never stored in this repository.
+
+- **On the live site:** the first time someone uses Millisa it asks for the key and saves it in that browser only. Use "Disconnect Millisa" on the profile page to remove it.
+- **When running locally:** create a file called `.env.local` in the project folder with this line, and Millisa connects on its own in `npm run dev`:
+
+```
+VITE_MILLISA_KEY=your-key-here
+```
+
+`.env.local` is ignored by git, so it is never committed.
+
 ## Built for Bharat
 
 - Cities outside the metros come first: Indore, Jaipur, Kochi, Bhubaneswar, Nashik and more.
@@ -37,7 +65,7 @@ HackShift puts job seekers, founders, startups, mentors and recruiters on one pl
 - React Router
 - CSS Modules with a small set of design tokens
 - Lucide icons
-- Anek Latin by Ek Type, an Indian type foundry
+- Anek Latin and Anek Devanagari by Ek Type, an Indian type foundry
 - Data is stored in the browser with localStorage, so the demo works without a backend
 - Deployed to GitHub Pages with GitHub Actions
 
@@ -67,6 +95,8 @@ npm run preview
 4. Post an idea in Ventures and ask for a mentor review.
 5. Book a mentor session and check it on your dashboard.
 6. Use the schemes finder to see which schemes fit your stage.
+7. Open a role, press "Check my fit", then "Practice the interview" and answer one question in Hindi.
+8. Ask Millisa in Hindi: "मेरे आइडिया के लिए कौन सी सरकारी योजना सही है?"
 
 To start over, open your profile and choose "Clear my data".
 
@@ -76,7 +106,8 @@ To start over, open your profile and choose "Clear my data".
 src/
   components/   header, footer, layout, Shift Board
   data/         mock opportunities, challenges, ventures, mentors and schemes
-  lib/          skill matching helpers
+  lib/          skill matching, the Millisa client and its prompts
+  millisa/      Millisa chat panel, key dialog and the feature panels
   pages/        one file per screen, each with its own CSS module
   store/        app state saved to localStorage
   styles/       design tokens and shared styles
@@ -94,6 +125,7 @@ src/
 ## What is next
 
 - Accounts and a real database
-- Hindi and regional language support across the interface
+- Hindi and regional languages across the whole interface, not only in Millisa
+- A small server for Millisa so visitors do not need a key
 - Startups posting their own challenges from a dashboard
 - Notifications on WhatsApp for new matches
