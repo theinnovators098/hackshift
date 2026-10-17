@@ -1,0 +1,131 @@
+.funnel {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.funnel li {
+  display: grid;
+  grid-template-columns: 100px 1fr 28px;
+  align-items: center;
+  gap: 12px;
+  font-size: var(--t-sm);
+}
+
+.funnelLabel {
+  color: var(--ink-2);
+}
+
+.bar {
+  height: 12px;
+  border-radius: 6px;
+  background: var(--line-soft);
+  overflow: hidden;
+}
+
+.bar span {
+  display: block;
+  height: 100%;
+  min-width: 2px;
+  border-radius: 6px;
+  background: var(--ink);
+}
+
+.bar .barMuted {
+  background: var(--ink-3);
+}
+
+.funnel li:nth-child(3) .bar span,
+.funnel li:nth-child(4) .bar span {
+  background: var(--marigold);
+}
+
+.funnel li:nth-child(5) .bar span {
+  background: var(--leaf);
+}
+
+.funnel .num {
+  text-align: right;
+  font-weight: 700;
+}
+
+.board {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(196px, 1fr);
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 8px;
+}
+
+.column {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: 12px;
+  border-radius: var(--r-panel);
+  background: #e9ebf0;
+}
+
+.column h2 {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--t-sm);
+  font-weight: 700;
+}
+
+.column h2 span {
+  color: var(--ink-3);
+}
+
+.column ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.card {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-control);
+  background: var(--surface);
+}
+
+.name {
+  font-weight: 700;
+}
+
+.badges {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--leaf);
+  font-size: var(--t-xs);
+  font-weight: 600;
+}
+
+.note {
+  font-size: var(--t-sm);
+  color: var(--ink-2);
+}
+
+.when {
+  font-size: var(--t-sm);
+  font-weight: 600;
+  color: var(--marigold-deep);
+}
+
+.edit {
+  display: grid;
+  gap: 8px;
+}
+
+.edit textarea {
+  min-height: 80px;
+}
