@@ -19,3 +19,64 @@
   display: flex;
   gap: 8px;
 }
+
+.actions {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  border-radius: var(--r-control);
+  background: #fafbfc;
+  font-size: var(--t-sm);
+}
+
+.actions p {
+  font-weight: 700;
+}
+
+.actions label {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  cursor: pointer;
+}
+
+.actions input {
+  margin-top: 3px;
+  accent-color: var(--leaf);
+}
+
+.actionDone {
+  color: var(--ink-3);
+  text-decoration: line-through;
+}
+
+.rate {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px dashed #d8b45a;
+  border-radius: var(--r-control);
+  background: #fffaf0;
+  font-size: var(--t-sm);
+}
+
+.rate > p {
+  font-weight: 700;
+}
+
+.stars {
+  display: flex;
+  gap: 4px;
+}
+
+.stars button {
+  padding: 2px;
+  border: 0;
+  background: none;
+  color: var(--line);
+  cursor: pointer;
+}
+
+.stars button[aria-pressed='true'] {
+  color: var(--marigold);
+}

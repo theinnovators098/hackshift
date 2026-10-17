@@ -6,6 +6,7 @@ import { overlap } from '../lib/match'
 import DraftNote from '../millisa/DraftNote'
 import FitCheck from '../millisa/FitCheck'
 import Verified from '../components/Verified'
+import ReportButton from '../components/ReportButton'
 import MessageButton from '../components/MessageButton'
 import { useStore } from '../store/AppStore'
 import NotFound from './NotFound'
@@ -172,6 +173,7 @@ export default function OpportunityDetail() {
           </div>
 
           <FitCheck opportunity={o} challenge={challenge} />
+          {!ownRole && <ReportButton kind="opportunities" targetId={o.id} label={`${o.title} at ${o.company}`} />}
 
           {challenge && (
             <div className={styles.callout}>

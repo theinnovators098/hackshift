@@ -34,12 +34,17 @@ export function MillisaProvider({ children }: { children: ReactNode }) {
   const [panelOpen, setPanelOpen] = useState(false)
   const waiting = useRef<((ok: boolean) => void) | null>(null)
   const { recordUsage, usedToday, data, account } = useStore()
-  const live = useRef({ recordUsage, usedToday, limit: data.settings.millisaDailyLimit, admin: account?.kind === 'admin' })
-  live.current = { recordUsage, usedToday, limit: data.settings.millisaDailyLimit, admin: account?.kind === 'admin' }
+  const now = { recordUsage, usedToday, limit: data.settings.millisaDailyLimit, admin: account?.kind === 'admin', guest: !account, guestsAllowed: data.settings.guestMillisa }
+  const live = useRef(now)
+  live.current = now
 
   useEffect(() => {
     watchMillisa((e) => live.current.recordUsage(e))
-    gateMillisa(() => live.current.admin || live.current.usedToday < live.current.limit)
+    gateMillisa(() => {
+      const g = live.current
+      if (g.guest && !g.guestsAllowed) return 'signin'
+      return g.admin || g.usedToday < g.limit ? null : 'limit'
+    })
     return () => {
       watchMillisa(null)
       gateMillisa(null)

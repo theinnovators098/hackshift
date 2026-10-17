@@ -1,13 +1,14 @@
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate, Route, Routes } from 'react-router-dom'
-import { CalendarCheck, CalendarClock, CalendarDays, LayoutDashboard, UserCog, UserRound } from 'lucide-react'
+import { CalendarCheck, CalendarClock, CalendarDays, LayoutDashboard, Lightbulb, UserCog, UserRound } from 'lucide-react'
 import Calendar from './Calendar'
 import { defaultSaturdaySlots, defaultWeekdaySlots } from '../pages/MentorDetail'
-import { useStore, type Booking } from '../store/AppStore'
+import { useStore } from '../store/AppStore'
 import AccountSettings from './AccountSettings'
+import { Sessions, VentureReviews } from './MentorSessions'
 import { sharedRoutes, useSharedNav } from './shared'
 import PanelShell from './PanelShell'
-import { commaList, Empty, PanelHead, Section, Stats, Status, panelStyles as styles } from './ui'
+import { commaList, Empty, PanelHead, Section, Stats, panelStyles as styles } from './ui'
 
 const weekdayOptions = ['6:00 pm', '6:30 pm', '7:00 pm', '7:30 pm', '8:00 pm', '8:30 pm', '9:00 pm', '9:30 pm']
 const saturdayOptions = ['9:00 am', '10:00 am', '10:30 am', '11:30 am', '12:00 pm', '3:00 pm', '4:00 pm', '5:00 pm']
@@ -34,7 +35,8 @@ function PendingNote() {
 }
 
 function Overview() {
-  const { me, mentor, bookings, accountById } = useMentor()
+  const { me, mentor, bookings, accountById, mentorRating } = useMentor()
+  const rating = mentor ? mentorRating(mentor.id) : null
   const requests = bookings.filter((b) => b.status === 'Requested')
   const upcoming = bookings.filter((b) => b.status === 'Confirmed')
   return (
@@ -52,6 +54,7 @@ function Overview() {
           { label: 'Requests waiting', value: requests.length, to: '/panel/sessions', hot: requests.length > 0 },
           { label: 'Upcoming sessions', value: upcoming.length, to: '/panel/sessions' },
           { label: 'Sessions given', value: mentor?.sessions ?? 0 },
+          { label: 'Average rating', value: rating ? `${rating.avg.toFixed(1)} / 5` : 'None yet' },
         ]}
       />
       <Section title="Coming up" link={{ to: '/panel/sessions', label: 'All sessions' }}>
@@ -72,113 +75,6 @@ function Overview() {
           </ul>
         )}
       </Section>
-    </>
-  )
-}
-
-function SessionCard({ b }: { b: Booking }) {
-  const { accountById, setBookingStatus } = useStore()
-  const [note, setNote] = useState(b.mentorNote ?? '')
-  const [writing, setWriting] = useState(false)
-  const who = accountById(b.accountId)
-
-  return (
-    <li className={styles.card}>
-      <div className={styles.cardHead}>
-        <div>
-          <p className={styles.cardTitle}>{who?.name ?? 'Former member'}</p>
-          <p className={styles.cardSub}>
-            {b.day}, {b.time}
-            {who ? `. ${who.profile.city}${who.profile.college ? `, ${who.profile.college}` : ''}` : ''}
-          </p>
-        </div>
-        <Status value={b.status} />
-      </div>
-      <blockquote className={styles.quote}>{b.topic}</blockquote>
-      {who?.profile.goal && <p className={styles.cardBody}>Their goal: {who.profile.goal}</p>}
-      {b.mentorNote && !writing && <p className={styles.cardBody}>Your note: {b.mentorNote}</p>}
-      {writing && (
-        <label className="field">
-          <span>Note for {who?.name.split(' ')[0]}</span>
-          <textarea
-            className="input"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="What you talked about and the one thing they should do next."
-          />
-        </label>
-      )}
-      <div className={styles.cardFoot}>
-        {b.status === 'Requested' && (
-          <>
-            <button type="button" className="btn btn-primary btn-sm" onClick={() => setBookingStatus(b.id, 'Confirmed')}>
-              Accept
-            </button>
-            <button type="button" className="btn btn-ghost btn-sm" onClick={() => setBookingStatus(b.id, 'Declined')}>
-              Decline
-            </button>
-          </>
-        )}
-        {b.status === 'Confirmed' &&
-          (writing ? (
-            <>
-              <button
-                type="button"
-                className="btn btn-primary btn-sm"
-                onClick={() => {
-                  setBookingStatus(b.id, 'Done', note.trim())
-                  setWriting(false)
-                }}
-              >
-                Mark as done
-              </button>
-              <button type="button" className="btn btn-ghost btn-sm" onClick={() => setWriting(false)}>
-                Cancel
-              </button>
-            </>
-          ) : (
-            <>
-              <button type="button" className="btn btn-primary btn-sm" onClick={() => setWriting(true)}>
-                Mark as done
-              </button>
-              <button type="button" className={`${styles.link} ${styles.danger}`} onClick={() => setBookingStatus(b.id, 'Declined')}>
-                Cancel session
-              </button>
-            </>
-          ))}
-      </div>
-    </li>
-  )
-}
-
-function Sessions() {
-  const { bookings } = useMentor()
-  const [tab, setTab] = useState<'Requested' | 'Confirmed' | 'Past'>('Requested')
-  const groups = {
-    Requested: bookings.filter((b) => b.status === 'Requested'),
-    Confirmed: bookings.filter((b) => b.status === 'Confirmed'),
-    Past: bookings.filter((b) => b.status === 'Done' || b.status === 'Declined'),
-  }
-  const labels = { Requested: 'Requests', Confirmed: 'Upcoming', Past: 'Past' }
-  return (
-    <>
-      <PanelHead title="Sessions" intro="Accept the requests you can take. People see your answer straight away." />
-      <div className={styles.tabs}>
-        {(Object.keys(groups) as (keyof typeof groups)[]).map((k) => (
-          <button key={k} type="button" aria-pressed={tab === k} onClick={() => setTab(k)}>
-            {labels[k]} ({groups[k].length})
-          </button>
-        ))}
-      </div>
-      {groups[tab].length === 0 ? (
-        <Empty title={tab === 'Requested' ? 'No new requests' : tab === 'Confirmed' ? 'Nothing coming up' : 'No past sessions yet'} />
-      ) : (
-        <ul className={styles.list}>
-          {groups[tab].map((b) => (
-            <SessionCard key={b.id} b={b} />
-          ))}
-        </ul>
-      )}
     </>
   )
 }
@@ -342,11 +238,13 @@ function MentorProfile() {
 }
 
 export default function MentorPanel() {
-  const { bookings, mentor } = useMentor()
+  const { bookings, mentor, data } = useMentor()
+  const reviewsWaiting = new Set(data.accounts.flatMap((a) => a.lists.reviewRequests)).size
   const shared = useSharedNav('/panel')
   const nav = [
     { to: '/panel', label: 'Overview', icon: LayoutDashboard, end: true },
     { to: '/panel/sessions', label: 'Sessions', icon: CalendarDays, count: bookings.filter((b) => b.status === 'Requested').length },
+    { to: '/panel/reviews', label: 'Venture reviews', icon: Lightbulb, count: reviewsWaiting },
     { to: '/panel/availability', label: 'Weekly times', icon: CalendarClock },
     { to: '/panel/calendar', label: 'Calendar', icon: CalendarCheck },
     { to: '/panel/profile', label: 'Mentor profile', icon: UserRound },
@@ -358,6 +256,7 @@ export default function MentorPanel() {
       <Routes>
         <Route index element={<Overview />} />
         <Route path="sessions" element={<Sessions />} />
+        <Route path="reviews" element={<VentureReviews />} />
         <Route path="availability" element={<Availability />} />
         <Route path="calendar" element={<Calendar />} />
         <Route path="profile" element={<MentorProfile />} />

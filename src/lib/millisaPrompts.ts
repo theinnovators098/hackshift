@@ -695,3 +695,40 @@ export function deckRequest(v: Venture, lang: Lang) {
     schema: deckSchema,
   }
 }
+
+export function agendaRequest(mentee: Profile, topic: string, mentorName: string, lang: Lang) {
+  return {
+    system: system(
+      lang,
+      `Prepare a 30 minute session agenda for ${mentorName}, a mentor on HackShift.`,
+      'Return a short plan: one line on what the person really needs, then four timed steps that add up to 30 minutes, then two questions to ask first. Plain text with a short list.',
+    ),
+    turns: ask(`THE PERSON\n${profileBlock(mentee)}\n\nWHAT THEY WANT TO TALK ABOUT: ${topic}`),
+  }
+}
+
+export interface FollowUp {
+  note: string
+  actions: string[]
+}
+
+export const followUpSchema = {
+  type: 'object',
+  properties: {
+    note: { type: 'string', description: 'Two or three sentences from the mentor to the mentee, in first person' },
+    actions: list('Two to four action items for the mentee, each starting with a verb and small enough to do this week'),
+  },
+  required: ['note', 'actions'],
+}
+
+export function followUpRequest(roughNotes: string, topic: string, menteeName: string) {
+  return {
+    system: system(
+      'en',
+      `Turn a mentor's rough notes from a session with ${menteeName} into a short follow-up note and clear action items.`,
+      'Keep every piece of advice from the notes and add nothing new.',
+    ),
+    turns: ask(`SESSION TOPIC: ${topic}\n\nMENTOR NOTES:\n${roughNotes}`),
+    schema: followUpSchema,
+  }
+}

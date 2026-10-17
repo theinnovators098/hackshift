@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
 import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import { ArrowLeft, Send } from 'lucide-react'
+import ReportButton from '../components/ReportButton'
 import Verified from '../components/Verified'
 import { kindLabel, useStore } from '../store/AppStore'
 import { Empty, PanelHead, initials, timeAgo } from './ui'
@@ -133,6 +134,9 @@ export default function Messages() {
                   </p>
                   <p className={styles.preview}>{kindLabel[other.kind]}</p>
                 </div>
+                <span className={styles.report}>
+                  <ReportButton kind="account" targetId={other.id} label={other.name} />
+                </span>
               </header>
               <div className={styles.messages} aria-live="polite">
                 {messages.length === 0 && <p className={styles.none}>Say hello. Mention what you want to talk about in the first line.</p>}

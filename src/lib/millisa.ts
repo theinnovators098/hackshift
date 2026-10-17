@@ -7,7 +7,7 @@ export const SMART = 'gemini-flash-latest'
 
 export type Lang = 'en' | 'hi'
 
-export type ErrorKind = 'no-key' | 'bad-key' | 'busy' | 'offline' | 'blocked' | 'failed' | 'limit'
+export type ErrorKind = 'no-key' | 'bad-key' | 'busy' | 'offline' | 'blocked' | 'failed' | 'limit' | 'signin'
 
 const messages: Record<ErrorKind, string> = {
   'no-key': 'Connect Millisa to use this.',
@@ -17,6 +17,7 @@ const messages: Record<ErrorKind, string> = {
   blocked: 'Millisa cannot answer that one. Try asking in a different way.',
   failed: 'Millisa could not finish that answer. Try again.',
   limit: 'You have reached today’s Millisa limit on HackShift. It resets tomorrow morning.',
+  signin: 'Sign in to use Millisa. It is free for everyone with a HackShift account.',
 }
 
 export class MillisaError extends Error {
@@ -148,16 +149,17 @@ export function watchMillisa(fn: Watcher | null) {
   watcher = fn
 }
 
-let gate: (() => boolean) | null = null
+let gate: (() => ErrorKind | null) | null = null
 
-export function gateMillisa(fn: (() => boolean) | null) {
+export function gateMillisa(fn: (() => ErrorKind | null) | null) {
   gate = fn
 }
 
 async function send(req: Request, stream: boolean) {
   const key = getKey()
   if (!key) throw new MillisaError('no-key')
-  if (gate && !gate()) throw new MillisaError('limit')
+  const blocked = gate?.()
+  if (blocked) throw new MillisaError(blocked)
   const first = req.model ?? FAST
   const attempts = first === SMART ? [SMART, FAST] : [first, first]
   const started = Date.now()

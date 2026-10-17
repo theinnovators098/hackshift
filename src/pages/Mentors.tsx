@@ -6,6 +6,17 @@ import Verified from '../components/Verified'
 import { useStore } from '../store/AppStore'
 import styles from './Mentors.module.css'
 
+function Rating({ id }: { id: string }) {
+  const r = useStore().mentorRating(id)
+  if (!r) return null
+  return (
+    <span className={styles.rating} aria-label={`Rated ${r.avg.toFixed(1)} out of 5 by ${r.count} people`}>
+      {' '}
+      ★ {r.avg.toFixed(1)} ({r.count})
+    </span>
+  )
+}
+
 export default function Mentors() {
   const { mentors, isVerified } = useStore()
   const [topic, setTopic] = useState('')
@@ -68,6 +79,7 @@ export default function Mentors() {
                   </h2>
                   <p className={styles.role}>
                     {m.title} at {m.company}
+                    <Rating id={m.id} />
                   </p>
                   <p className={styles.bio}>{m.bio}</p>
                   <div className={styles.tags}>

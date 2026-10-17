@@ -138,6 +138,10 @@
   border-bottom: 1px solid var(--line-soft);
 }
 
+.report {
+  margin-left: auto;
+}
+
 .back {
   display: none;
 }

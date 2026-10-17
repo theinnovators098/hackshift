@@ -17,6 +17,8 @@ import type {
   Notice,
   PipelineEntry,
   Profile,
+  Report,
+  ReportKind,
   Settings,
   UsageEntry,
   SubmissionStatus,
@@ -36,6 +38,8 @@ export type {
   PipelineEntry,
   PipelineStage,
   Profile,
+  Report,
+  ReportKind,
   Submission,
   SubmissionStatus,
 } from './types'
@@ -451,6 +455,120 @@ function useAppState() {
           )
           return withLog(next, `${nameOf(d)} marked the session with ${who} as ${status.toLowerCase()}`)
         }),
+      mentorRating: (mentorId: string) => {
+        const rated = data.bookings.filter((b) => b.mentorId === mentorId && b.rating)
+        return rated.length ? { avg: rated.reduce((n, b) => n + (b.rating ?? 0), 0) / rated.length, count: rated.length } : null
+      },
+      confirmBooking: (id: string, link: string) =>
+        update((d) => {
+          const b = d.bookings.find((x) => x.id === id)
+          const m = b && d.mentors.find((x) => x.id === b.mentorId)
+          const next = notify(
+            { ...d, bookings: d.bookings.map((x) => (x.id === id ? { ...x, status: 'Confirmed' as const, link, proposed: undefined } : x)) },
+            b?.accountId,
+            `${m?.name} confirmed your session on ${b?.day}, ${b?.time}`,
+            '/panel/sessions',
+          )
+          return withLog(next, `${nameOf(d)} confirmed a session`)
+        }),
+      proposeTime: (id: string, day: string, time: string) =>
+        update((d) => {
+          const b = d.bookings.find((x) => x.id === id)
+          const m = b && d.mentors.find((x) => x.id === b.mentorId)
+          return notify(
+            { ...d, bookings: d.bookings.map((x) => (x.id === id ? { ...x, proposed: { day, time } } : x)) },
+            b?.accountId,
+            `${m?.name} suggested a new time: ${day}, ${time}`,
+            '/panel/sessions',
+          )
+        }),
+      answerProposal: (id: string, accept: boolean) =>
+        update((d) => {
+          const b = d.bookings.find((x) => x.id === id)
+          if (!b?.proposed) return d
+          const next = d.bookings.map((x) =>
+            x.id === id ? (accept ? { ...x, day: b.proposed!.day, time: b.proposed!.time, proposed: undefined } : { ...x, proposed: undefined }) : x,
+          )
+          return notify(
+            { ...d, bookings: next },
+            mentorAccountId(d, b.mentorId),
+            accept ? `${nameOf(d)} agreed to ${b.proposed.day}, ${b.proposed.time}` : `${nameOf(d)} cannot make the new time you suggested`,
+            '/panel/sessions',
+          )
+        }),
+      finishSession: (id: string, note: string, actions: string[]) =>
+        update((d) => {
+          const b = d.bookings.find((x) => x.id === id)
+          const m = b && d.mentors.find((x) => x.id === b.mentorId)
+          const next = notify(
+            {
+              ...d,
+              mentors: d.mentors.map((x) => (b && x.id === b.mentorId ? { ...x, sessions: x.sessions + 1 } : x)),
+              bookings: d.bookings.map((x) =>
+                x.id === id ? { ...x, status: 'Done' as const, mentorNote: note, actions: actions.map((text) => ({ text, done: false })) } : x,
+              ),
+            },
+            b?.accountId,
+            `${m?.name} left notes and ${actions.length} action ${actions.length === 1 ? 'item' : 'items'} from your session`,
+            '/panel/sessions',
+          )
+          return withLog(next, `${nameOf(d)} finished a session`)
+        }),
+      toggleAction: (id: string, index: number) =>
+        update((d) => ({
+          ...d,
+          bookings: d.bookings.map((x) =>
+            x.id === id && x.actions ? { ...x, actions: x.actions.map((a, i) => (i === index ? { ...a, done: !a.done } : a)) } : x,
+          ),
+        })),
+      rateSession: (id: string, rating: number, review: string) =>
+        update((d) => {
+          const b = d.bookings.find((x) => x.id === id)
+          return notify(
+            { ...d, bookings: d.bookings.map((x) => (x.id === id ? { ...x, rating, review } : x)) },
+            b && mentorAccountId(d, b.mentorId),
+            `${nameOf(d)} rated your session ${rating} out of 5`,
+            '/panel/sessions',
+          )
+        }),
+      reviewVenture: (ventureId: string, text: string) =>
+        update((d) => {
+          const me = d.accounts.find((a) => a.id === d.session)
+          const v = d.ventures.find((x) => x.id === ventureId)
+          if (!me?.mentorId || !v) return d
+          const founder = d.accounts.find((a) => a.lists.reviewRequests.includes(ventureId))
+          let next: Data = {
+            ...d,
+            ventures: d.ventures.map((x) =>
+              x.id === ventureId ? { ...x, reviews: [...(x.reviews ?? []), { mentorId: me.mentorId!, text, on: today() }] } : x,
+            ),
+            accounts: d.accounts.map((a) =>
+              a.lists.reviewRequests.includes(ventureId) ? { ...a, lists: { ...a.lists, reviewRequests: a.lists.reviewRequests.filter((r) => r !== ventureId) } } : a,
+            ),
+          }
+          next = notify(next, v.ownerId ?? founder?.id, `${me.name} reviewed ${v.name}. Read the feedback in your workspace.`, `/panel/ventures/${ventureId}`)
+          return withLog(next, `${me.name} reviewed the venture ${v.name}`)
+        }),
+
+      reports: data.reports,
+      report: (kind: ReportKind, targetId: string, label: string, reason: string, note: string) =>
+        update((d) => {
+          const r: Report = { id: uid('r'), by: d.session ?? 'guest', kind, targetId, label, reason, note, at: new Date().toISOString(), status: 'open' }
+          let next: Data = { ...d, reports: [r, ...d.reports] }
+          for (const admin of d.accounts.filter((a) => a.kind === 'admin' || a.kinds.includes('admin'))) {
+            next = notify(next, admin.id, `New report: ${label} (${reason.toLowerCase()})`, '/admin/reports')
+          }
+          return next
+        }),
+      resolveReport: (id: string, status: Report['status'], resolution: string) =>
+        update((d) => {
+          const r = d.reports.find((x) => x.id === id)
+          return withLog(
+            { ...d, reports: d.reports.map((x) => (x.id === id ? { ...x, status, resolution } : x)) },
+            `${nameOf(d)} ${status === 'resolved' ? 'acted on' : 'dismissed'} a report about ${r?.label}`,
+          )
+        }),
+
       saveMentor: (m: Mentor) =>
         update((d) => withLog({ ...d, mentors: d.mentors.map((x) => (x.id === m.id ? m : x)) }, `${nameOf(d)} updated the mentor profile of ${m.name}`)),
 

@@ -2,6 +2,7 @@ import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, Check, ExternalLink, MapPin, Tag, Users } from 'lucide-react'
 import { stages } from '../data/ventures'
 import MessageButton from '../components/MessageButton'
+import ReportButton from '../components/ReportButton'
 import { useStore } from '../store/AppStore'
 import NotFound from './NotFound'
 import styles from './Detail.module.css'
@@ -162,6 +163,8 @@ export default function VentureDetail() {
               </>
             )}
           </div>
+
+          {!v.mine && <ReportButton kind="ventures" targetId={v.id} label={v.name} />}
 
           {fits.length > 0 && (
             <div className={styles.panel}>

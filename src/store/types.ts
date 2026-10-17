@@ -142,6 +142,26 @@ export interface Booking {
   topic: string
   status: BookingStatus
   mentorNote?: string
+  link?: string
+  proposed?: { day: string; time: string }
+  actions?: { text: string; done: boolean }[]
+  rating?: number
+  review?: string
+}
+
+export type ReportKind = 'opportunities' | 'challenges' | 'ventures' | 'mentors' | 'account'
+
+export interface Report {
+  id: string
+  by: string
+  kind: ReportKind
+  targetId: string
+  label: string
+  reason: string
+  note: string
+  at: string
+  status: 'open' | 'resolved' | 'dismissed'
+  resolution?: string
 }
 
 export type PipelineStage = 'Shortlisted' | 'Contacted' | 'Interview' | 'Offer' | 'Hired' | 'Not a fit'
@@ -206,6 +226,7 @@ export interface UsageEntry {
 export interface Settings {
   reviewPosts: boolean
   millisaDailyLimit: number
+  guestMillisa: boolean
 }
 
 export interface Data {
@@ -227,6 +248,7 @@ export interface Data {
   messages: Message[]
   tasks: MillisaTask[]
   usage: UsageEntry[]
+  reports: Report[]
   settings: Settings
 }
 

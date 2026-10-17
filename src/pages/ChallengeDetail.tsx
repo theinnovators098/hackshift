@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, BadgeCheck, CalendarClock, Clock, Gauge, Users } from 'lucide-react'
+import ReportButton from '../components/ReportButton'
 import PreReview from '../millisa/PreReview'
 import { useStore } from '../store/AppStore'
 import NotFound from './NotFound'
@@ -201,6 +202,7 @@ export default function ChallengeDetail() {
           </div>
 
           {showForm && <PreReview challenge={c} link={link} note={note} onUseNote={setNote} />}
+          <ReportButton kind="challenges" targetId={c.id} label={`${c.title} from ${c.company}`} />
 
           {role && (
             <div className={styles.callout}>

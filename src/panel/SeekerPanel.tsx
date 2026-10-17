@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, Navigate, Route, Routes } from 'react-router-dom'
-import { Bell, Bookmark, CalendarCheck, CalendarDays, Compass, LayoutDashboard, Lightbulb, Send, UserCog, UserRound, Zap } from 'lucide-react'
+import { Bell, Bookmark, CalendarCheck, CalendarDays, Star, Video, Compass, LayoutDashboard, Lightbulb, Send, UserCog, UserRound, Zap } from 'lucide-react'
 import { toParams } from '../lib/jobs'
 import Calendar from './Calendar'
 import CareerPlan from './CareerPlan'
@@ -178,11 +178,35 @@ function ChallengesDone() {
   )
 }
 
+function RateSession({ id }: { id: string }) {
+  const { rateSession } = useStore()
+  const [stars, setStars] = useState(0)
+  const [text, setText] = useState('')
+  return (
+    <div className={own.rate}>
+      <p>How useful was this session?</p>
+      <div className={own.stars} role="group" aria-label="Rating">
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button key={n} type="button" aria-pressed={stars >= n} aria-label={`${n} out of 5`} onClick={() => setStars(n)}>
+            <Star size={20} fill={stars >= n ? 'currentColor' : 'none'} />
+          </button>
+        ))}
+      </div>
+      <input className="input" value={text} onChange={(e) => setText(e.target.value)} placeholder="One line other people will see on the mentor’s page" aria-label="Review" />
+      <div>
+        <button type="button" className="btn btn-primary btn-sm" disabled={!stars} onClick={() => rateSession(id, stars, text.trim())}>
+          Send rating
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function Sessions() {
-  const { bookings, data, cancelBooking } = useStore()
+  const { bookings, data, cancelBooking, answerProposal, toggleAction } = useStore()
   return (
     <>
-      <PanelHead title="Mentor sessions" intro="Sessions you asked for. Mentors confirm or suggest another time." />
+      <PanelHead title="Mentor sessions" intro="Sessions you asked for. Mentors confirm, or suggest another time that you can accept." />
       {bookings.length === 0 ? (
         <Empty title="No sessions yet" action={<Link to="/mentors" className="btn btn-primary btn-sm">Find a mentor</Link>}>
           Thirty minutes with someone who has done it before can save you months.
@@ -191,6 +215,7 @@ function Sessions() {
         <ul className={styles.list}>
           {[...bookings].reverse().map((b) => {
             const m = data.mentors.find((x) => x.id === b.mentorId)
+            const first = m?.name.split(' ')[0] ?? 'Your mentor'
             return (
               <li key={b.id} className={styles.card}>
                 <div className={styles.cardHead}>
@@ -205,10 +230,47 @@ function Sessions() {
                   <Status value={b.status} />
                 </div>
                 <p className={styles.cardBody}>{b.topic}</p>
+                {b.proposed && (
+                  <div className={own.invite}>
+                    <p className={own.inviteHead}>
+                      <CalendarDays size={16} aria-hidden="true" /> {first} suggested {b.proposed.day}, {b.proposed.time}
+                    </p>
+                    <div className={styles.cardFoot}>
+                      <button type="button" className="btn btn-primary btn-sm" onClick={() => answerProposal(b.id, true)}>
+                        That works
+                      </button>
+                      <button type="button" className="btn btn-ghost btn-sm" onClick={() => answerProposal(b.id, false)}>
+                        I cannot make it
+                      </button>
+                    </div>
+                  </div>
+                )}
+                {b.status === 'Confirmed' && b.link && (
+                  <a href={b.link} target="_blank" rel="noreferrer" className="btn btn-primary btn-sm">
+                    <Video size={15} /> Join the call
+                  </a>
+                )}
                 {b.mentorNote && (
                   <blockquote className={styles.quote}>
-                    {m?.name.split(' ')[0]}: {b.mentorNote}
+                    {first}: {b.mentorNote}
                   </blockquote>
+                )}
+                {b.actions && b.actions.length > 0 && (
+                  <div className={own.actions}>
+                    <p>Your action items</p>
+                    {b.actions.map((a, i) => (
+                      <label key={a.text}>
+                        <input type="checkbox" checked={a.done} onChange={() => toggleAction(b.id, i)} />
+                        <span className={a.done ? own.actionDone : undefined}>{a.text}</span>
+                      </label>
+                    ))}
+                  </div>
+                )}
+                {b.status === 'Done' && !b.rating && <RateSession id={b.id} />}
+                {b.rating && (
+                  <p className={styles.cardSub}>
+                    You rated this {b.rating} out of 5{b.review ? `: “${b.review}”` : ''}
+                  </p>
                 )}
                 {(b.status === 'Requested' || b.status === 'Confirmed') && (
                   <div className={styles.cardFoot}>

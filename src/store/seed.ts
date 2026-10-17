@@ -226,7 +226,11 @@ export function seed(): Data {
     },
   ]
 
-  const accounts: Account[] = raw.map((a) => ({ ...a, kinds: [a.kind] }))
+  const accounts: Account[] = raw.map((a) => ({
+    ...a,
+    kinds: [a.kind],
+    lists: a.id === 'acc-tanvi-desai' ? { ...a.lists, reviewRequests: ['chai-ledger'] } : a.lists,
+  }))
 
   return {
     version: 3,
@@ -387,6 +391,23 @@ export function seed(): Data {
         time: '8:00 pm',
         topic: 'Can a content writer move into product? What should I build first?',
         status: 'Confirmed',
+        link: 'https://meet.jit.si/hackshift-book-2',
+      },
+      {
+        id: 'book-3',
+        mentorId: 'meera-iyer',
+        accountId: 'acc-vikram-joshi',
+        day: 'Mon, 6 Oct',
+        time: '7:00 pm',
+        topic: 'How do I talk about my college fest apps in a product interview?',
+        status: 'Done',
+        mentorNote: 'Lead with the problem the fest team had, then what you shipped and how many people used it.',
+        actions: [
+          { text: 'Rewrite the fest app story in three lines: problem, what you built, result', done: true },
+          { text: 'Practise two product interviews on HackShift', done: false },
+        ],
+        rating: 5,
+        review: 'Very practical. She rewrote my opening line with me.',
       },
     ],
     pipeline: [
@@ -485,6 +506,19 @@ export function seed(): Data {
     ],
     tasks: [],
     usage: [],
-    settings: { reviewPosts: true, millisaDailyLimit: 80 },
+    reports: [
+      {
+        id: 'r-1',
+        by: 'acc-priya-nair',
+        kind: 'opportunities',
+        targetId: 'dhaaga-cofounder-ops',
+        label: 'Operations co-founder at Dhaaga',
+        reason: 'Unclear or unfair terms',
+        note: 'The equity range is wide and there is no mention of vesting or a written agreement.',
+        at: minutesAgo(400),
+        status: 'open',
+      },
+    ],
+    settings: { reviewPosts: true, millisaDailyLimit: 80, guestMillisa: true },
   }
 }

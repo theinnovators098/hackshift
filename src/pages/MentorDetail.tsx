@@ -2,6 +2,7 @@ import { useMemo, useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, Briefcase, CalendarCheck, Languages, MapPin } from 'lucide-react'
 import Verified from '../components/Verified'
+import ReportButton from '../components/ReportButton'
 import MessageButton from '../components/MessageButton'
 import { useStore } from '../store/AppStore'
 import NotFound from './NotFound'
@@ -28,7 +29,7 @@ function upcomingDays(count: number, weekdaySlots: string[], saturdaySlots: stri
 
 export default function MentorDetail() {
   const { id } = useParams()
-  const { profile, bookings, book, cancelBooking, data, visible, account, isVerified } = useStore()
+  const { profile, bookings, book, cancelBooking, data, visible, account, isVerified, mentorRating } = useStore()
   const m = data.mentors.find((x) => x.id === id && visible(x))
   const weekday = m?.weekdaySlots ?? defaultWeekdaySlots
   const saturday = m?.saturdaySlots ?? defaultSaturdaySlots
@@ -44,6 +45,7 @@ export default function MentorDetail() {
   const taken = (d: string, t: string) =>
     data.bookings.some((b) => b.mentorId === m.id && b.day === d && b.time === t && b.status !== 'Declined')
   const ownMentorPage = account?.mentorId === m.id
+  const rating = mentorRating(m.id)
   const slots = days.find((d) => d.label === day)?.slots ?? []
   const first = m.name.split(' ')[0]
 
@@ -114,6 +116,22 @@ export default function MentorDetail() {
               ))}
             </div>
           </section>
+          {rating && (
+            <section>
+              <h2>
+                What people said (★ {rating.avg.toFixed(1)} from {rating.count} {rating.count === 1 ? 'rating' : 'ratings'})
+              </h2>
+              <ul className={styles.bullets}>
+                {data.bookings
+                  .filter((b) => b.mentorId === m.id && b.rating && b.review)
+                  .map((b) => (
+                    <li key={b.id}>
+                      “{b.review}” <span className={styles.muted}>{data.accounts.find((a) => a.id === b.accountId)?.name.split(' ')[0]}</span>
+                    </li>
+                  ))}
+              </ul>
+            </section>
+          )}
           <section>
             <h2>Getting the most out of 30 minutes</h2>
             <ul className={styles.bullets}>
@@ -214,6 +232,8 @@ export default function MentorDetail() {
               <MessageButton to={m.ownerId} label={`Message ${first}`} />
             </div>
           )}
+
+          {!ownMentorPage && <ReportButton kind="mentors" targetId={m.id} label={m.name} />}
 
           {mine.length > 0 && (
             <div className={styles.panel}>

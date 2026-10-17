@@ -1,0 +1,48 @@
+.panel {
+  display: grid;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: var(--r-control);
+  background: #f7f8fb;
+  font-size: var(--t-sm);
+}
+
+.join {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--t-sm);
+  font-weight: 600;
+}
+
+.done {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border-left: 3px solid var(--leaf);
+  background: #fafbfc;
+  font-size: var(--t-sm);
+  color: var(--ink-2);
+}
+
+.done ul {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+}
+
+.actionDone {
+  color: var(--ink-3);
+  text-decoration: line-through;
+}
+
+.rating {
+  color: var(--marigold-deep);
+  letter-spacing: 1px;
+}
+
+.rating span {
+  color: var(--ink-2);
+  letter-spacing: 0;
+}
