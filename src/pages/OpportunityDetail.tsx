@@ -4,6 +4,8 @@ import { ArrowLeft, Bookmark, BookmarkCheck, CalendarClock, CheckCircle2, MapPin
 import { challenges } from '../data/challenges'
 import { opportunities } from '../data/opportunities'
 import { overlap } from '../lib/match'
+import DraftNote from '../millisa/DraftNote'
+import FitCheck from '../millisa/FitCheck'
 import { useStore } from '../store/AppStore'
 import NotFound from './NotFound'
 import styles from './Detail.module.css'
@@ -111,6 +113,7 @@ export default function OpportunityDetail() {
                   />
                   <small>Your profile and any challenge badges are attached for you.</small>
                 </label>
+                <DraftNote opportunity={o} challenge={challenge} onText={setNote} />
                 <div className={styles.formActions}>
                   <button type="submit" className="btn btn-primary">
                     Send application
@@ -137,6 +140,8 @@ export default function OpportunityDetail() {
               {isSaved ? 'Saved' : 'Save for later'}
             </button>
           </div>
+
+          <FitCheck opportunity={o} challenge={challenge} />
 
           {challenge && (
             <div className={styles.callout}>

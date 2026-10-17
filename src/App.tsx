@@ -5,6 +5,7 @@ import Onboarding from './pages/Onboarding'
 import Dashboard from './pages/Dashboard'
 import Opportunities from './pages/Opportunities'
 import OpportunityDetail from './pages/OpportunityDetail'
+import Practice from './pages/Practice'
 import Talent from './pages/Talent'
 import Mentors from './pages/Mentors'
 import MentorDetail from './pages/MentorDetail'
@@ -26,6 +27,7 @@ export default function App() {
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="opportunities" element={<Opportunities />} />
         <Route path="opportunities/:id" element={<OpportunityDetail />} />
+        <Route path="opportunities/:id/practice" element={<Practice />} />
         <Route path="challenges" element={<Challenges />} />
         <Route path="challenges/:id" element={<ChallengeDetail />} />
         <Route path="ventures" element={<Ventures />} />
