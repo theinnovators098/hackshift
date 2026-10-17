@@ -142,7 +142,7 @@ export const people: Person[] = [
     city: 'Vadodara',
     headline: 'Fine arts graduate, packaging and illustration',
     skills: ['Illustration', 'Figma', 'Branding'],
-    badges: ['Bunkar Studio: weaver tag'],
+    badges: [],
     available: true,
     college: 'MSU Baroda',
   },

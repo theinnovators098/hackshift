@@ -193,3 +193,8 @@
   gap: 8px;
   margin-top: auto;
 }
+
+.closed {
+  font-size: var(--t-xs);
+  color: var(--ink-3);
+}

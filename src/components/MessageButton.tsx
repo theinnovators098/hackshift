@@ -14,8 +14,7 @@ export default function MessageButton({ to, label = 'Message', small = true, pla
   const navigate = useNavigate()
   const target = to ? accountById(to) : undefined
   if (!target || target.id === account?.id || target.status !== 'active') return null
-  const hiring = account?.kind === 'startup' || account?.kind === 'recruiter'
-  if (hiring && target.kind === 'seeker' && target.profile.allowMessages === false) return null
+  if (account?.kind !== 'admin' && target.kind === 'seeker' && target.profile.allowMessages === false) return null
 
   const open = () => {
     const base = account?.kind === 'admin' ? '/admin/messages' : '/panel/messages'

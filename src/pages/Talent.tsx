@@ -5,9 +5,18 @@ import MessageButton from '../components/MessageButton'
 import { useStore } from '../store/AppStore'
 import styles from './Talent.module.css'
 
+function Contact({ personId, name }: { personId: string; name: string }) {
+  const { account, accountOfPerson } = useStore()
+  const target = accountOfPerson(personId)
+  if (!target || target.id === account?.id) return null
+  if (target.profile.allowMessages === false && account?.kind !== 'admin') {
+    return <span className={styles.closed}>Not taking messages</span>
+  }
+  return <MessageButton to={target.id} label={`Contact ${name.split(' ')[0]}`} />
+}
+
 export default function Talent() {
-  const { shortlist, toggleShortlist, people, account, accountOfPerson } = useStore()
-  const canMessage = !!account && ['startup', 'recruiter', 'admin'].includes(account.kind)
+  const { shortlist, toggleShortlist, people } = useStore()
   const [query, setQuery] = useState('')
   const [city, setCity] = useState('')
   const [verifiedOnly, setVerifiedOnly] = useState(true)
@@ -138,7 +147,7 @@ export default function Talent() {
                     <p className={p.available ? styles.open : styles.busy}>
                       {p.available ? 'Open to offers' : 'Not looking right now'}
                     </p>
-                    {canMessage && <MessageButton to={accountOfPerson(p.id)?.id} />}
+                    <Contact personId={p.id} name={p.name} />
                   </div>
                 </li>
               )
