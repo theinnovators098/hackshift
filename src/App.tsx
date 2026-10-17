@@ -6,6 +6,10 @@ import Dashboard from './pages/Dashboard'
 import Opportunities from './pages/Opportunities'
 import OpportunityDetail from './pages/OpportunityDetail'
 import Talent from './pages/Talent'
+import Ventures from './pages/Ventures'
+import VentureDetail from './pages/VentureDetail'
+import NewVenture from './pages/NewVenture'
+import Schemes from './pages/Schemes'
 import Challenges from './pages/Challenges'
 import ChallengeDetail from './pages/ChallengeDetail'
 import NotFound from './pages/NotFound'
@@ -21,6 +25,10 @@ export default function App() {
         <Route path="opportunities/:id" element={<OpportunityDetail />} />
         <Route path="challenges" element={<Challenges />} />
         <Route path="challenges/:id" element={<ChallengeDetail />} />
+        <Route path="ventures" element={<Ventures />} />
+        <Route path="ventures/new" element={<NewVenture />} />
+        <Route path="ventures/:id" element={<VentureDetail />} />
+        <Route path="schemes" element={<Schemes />} />
         <Route path="talent" element={<Talent />} />
         <Route path="*" element={<NotFound />} />
       </Route>

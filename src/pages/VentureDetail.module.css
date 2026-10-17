@@ -1,0 +1,118 @@
+.oneLiner {
+  margin-top: 10px;
+  font-size: var(--t-lg);
+  color: var(--ink-2);
+  max-width: 54ch;
+}
+
+.track {
+  list-style: none;
+  margin: 28px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+}
+
+.track li {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 18px;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+
+.track li::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 4px;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--line);
+}
+
+.track .past,
+.track .now {
+  color: var(--ink);
+}
+
+.track .past::before {
+  background: var(--ink);
+}
+
+.track .now::before {
+  background: var(--marigold);
+}
+
+.marker {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+}
+
+.past .marker {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #fff;
+}
+
+.now .marker {
+  border: 6px solid var(--marigold);
+}
+
+.needs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.needs li {
+  padding: 12px 16px;
+  border: 1px solid var(--line);
+  border-left: 4px solid var(--marigold);
+  border-radius: var(--r-control);
+  background: var(--surface);
+  font-weight: 600;
+}
+
+.schemes {
+  list-style: none;
+  margin: 0 0 4px;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+  font-size: var(--t-sm);
+}
+
+.schemes li {
+  display: grid;
+}
+
+.schemes a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: 600;
+}
+
+.schemes span {
+  color: var(--ink-3);
+}
+
+@media (max-width: 560px) {
+  .track li {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 6px;
+    font-size: var(--t-sm);
+  }
+}
