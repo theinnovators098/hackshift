@@ -114,6 +114,7 @@
 }
 
 .kbd {
+  white-space: nowrap;
   padding: 1px 5px;
   border: 1px solid var(--line);
   border-radius: 4px;
@@ -153,7 +154,7 @@
   display: none;
 }
 
-@media (max-width: 1300px) {
+@media (max-width: 1420px) {
   .bar {
     gap: 20px;
   }

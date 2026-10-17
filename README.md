@@ -72,6 +72,7 @@ Millisa is built into the pages people already use. It replies in English or Hin
 | Post your idea | **Check with Millisa** reviews the idea, the stage, the questions people will ask and three cheap ways to test it. |
 | Challenge page | **Pre-review my work** checks your link and note against the brief before you submit. |
 | Profile | Reads a PDF resume and fills in the profile after you confirm. Writes the About paragraph. |
+| Resume check | Upload a resume as a PDF or a photo, at `/resume-check` or in the job seeker panel. Millisa shows what it read, then suggests roles on HackShift with what you have and what is missing, lines to rewrite, skills to learn, a challenge and mentors. One click adds the details to your profile, or starts a new profile from them. |
 | Career plan | Compares your profile with the role you want and lays out a week-by-week plan with challenges and mentors from HackShift. |
 | Founder workspace | Drafts a business plan, an MVP plan and a pitch deck outline from the idea. |
 | Hiring | Writes a role from rough notes, explains how an applicant fits, suggests interview questions, drafts messages and summarises the pipeline. It explains and never decides or rejects. |

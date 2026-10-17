@@ -28,6 +28,19 @@
   margin-top: 32px;
 }
 
+.resumeLink {
+  display: inline-block;
+  margin-top: 16px;
+  font-weight: 600;
+  text-decoration-color: var(--marigold);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+.resumeLink:hover {
+  color: var(--marigold-deep);
+}
+
 .proof {
   margin-top: 28px;
   font-size: var(--t-sm);

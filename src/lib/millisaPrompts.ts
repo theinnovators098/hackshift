@@ -359,6 +359,8 @@ export function preReviewRequest(c: Challenge, link: string, note: string, lang:
 }
 
 export interface ResumeRead {
+  name: string
+  city: string
   headline: string
   about: string
   skills: string[]
@@ -376,6 +378,8 @@ const row = (fields: string[]) => ({
 export const resumeSchema = {
   type: 'object',
   properties: {
+    name: { type: 'string', description: 'Full name as written. Empty if not shown.' },
+    city: { type: 'string', description: 'City they live in, only the city name. Empty if not shown.' },
     headline: { type: 'string', description: 'One line on who they are, under 70 characters. Empty if unclear.' },
     about: { type: 'string', description: 'Two or three sentences in first person, only from facts in the resume' },
     skills: list('Skills named in the resume, short names like React or Excel'),
@@ -388,18 +392,18 @@ export const resumeSchema = {
       required: ['github', 'portfolio', 'linkedin', 'website'],
     },
   },
-  required: ['headline', 'about', 'skills', 'education', 'work', 'certificates', 'links'],
+  required: ['name', 'city', 'headline', 'about', 'skills', 'education', 'work', 'certificates', 'links'],
 }
 
 export function resumeRequest() {
   return {
     system: system(
       'en',
-      'Read the attached resume and pull out the facts into the given fields.',
+      'Read the attached resume, which may be a PDF or a photo, and pull out the facts into the given fields.',
       'Copy facts exactly. Never guess or add anything that is not written in the resume. Use an empty string or an empty list when something is missing.',
       'Write years like "2021 to 2025" or "2024 to now". Keep work summaries to one sentence.',
     ),
-    turns: ask('Here is my resume. Pull out my details.'),
+    turns: ask('Here is my resume. Pull out my details. If the file is not a resume or cannot be read, return empty fields.'),
     schema: resumeSchema,
   }
 }
@@ -730,5 +734,103 @@ export function followUpRequest(roughNotes: string, topic: string, menteeName: s
     ),
     turns: ask(`SESSION TOPIC: ${topic}\n\nMENTOR NOTES:\n${roughNotes}`),
     schema: followUpSchema,
+  }
+}
+
+export interface ResumeAdvice {
+  summary: string
+  strength: 'Strong' | 'Good start' | 'Needs work'
+  fixes: string[]
+  rewrites: { before: string; after: string }[]
+  roles: { id: string; why: string; missing: string[] }[]
+  challenges: { id: string; why: string }[]
+  mentors: { id: string; why: string }[]
+  learn: { skill: string; how: string }[]
+}
+
+const pick = (max: number, extra: Record<string, object> = {}) => ({
+  type: 'array',
+  maxItems: max,
+  items: {
+    type: 'object',
+    properties: { id: { type: 'string' }, why: { type: 'string', description: 'One sentence tied to something in the resume' }, ...extra },
+    required: ['id', 'why', ...Object.keys(extra)],
+  },
+})
+
+export const adviceSchema = {
+  type: 'object',
+  properties: {
+    summary: { type: 'string', description: 'Two sentences, to the person as "you": what this resume is strongest for right now' },
+    strength: { type: 'string', enum: ['Strong', 'Good start', 'Needs work'] },
+    fixes: list('Three to five concrete changes that would make the resume better, most important first'),
+    rewrites: {
+      type: 'array',
+      maxItems: 3,
+      items: {
+        type: 'object',
+        properties: {
+          before: { type: 'string', description: 'A weak line copied from the resume' },
+          after: {
+            type: 'string',
+            description:
+              'A stronger version of the same line. Keep the same facts and add no new results, outcomes or claims. You may add one square-bracket blank only for a number the line already hints at, such as [number of users].',
+          },
+        },
+        required: ['before', 'after'],
+      },
+    },
+    roles: pick(4, { missing: list('Skills the role asks for that the resume does not show') }),
+    challenges: pick(2),
+    mentors: pick(2),
+    learn: {
+      type: 'array',
+      maxItems: 3,
+      items: {
+        type: 'object',
+        properties: { skill: { type: 'string' }, how: { type: 'string', description: 'A free or cheap way to learn it, no links' } },
+        required: ['skill', 'how'],
+      },
+    },
+  },
+  required: ['summary', 'strength', 'fixes', 'rewrites', 'roles', 'challenges', 'mentors', 'learn'],
+}
+
+export function adviceRequest(r: ResumeRead, site: Pick<Site, 'opportunities' | 'challenges' | 'mentors'>, lang: Lang) {
+  const resume = [
+    r.headline && `Headline: ${r.headline}`,
+    r.city && `City: ${r.city}`,
+    r.about && `About: ${r.about}`,
+    `Skills: ${r.skills.join(', ') || 'none listed'}`,
+    `Education: ${r.education.map((e) => `${e.degree}, ${e.school} (${e.years})`).join('; ') || 'none listed'}`,
+    `Work and projects: ${r.work.map((w) => `${w.role} at ${w.org} (${w.years}): ${w.summary}`).join('; ') || 'none listed'}`,
+    `Certificates: ${r.certificates.map((c) => `${c.name}, ${c.issuer}`).join('; ') || 'none'}`,
+    `Links: ${Object.values(r.links).filter(Boolean).join(', ') || 'none'}`,
+  ]
+    .filter(Boolean)
+    .join('\n')
+  return {
+    system: system(
+      lang,
+      'You are reviewing a resume for someone in India who wants their next role, internship or project. Be specific and kind, and never flatter.',
+      'Suggest roles, challenges and mentors only from the HackShift lists given, using their exact ids. Suggest fewer if few fit. Never invent experience the resume does not show.',
+      'Prefer roles in or near their city or ones that are remote. Resume fixes should be things a student can do this week, such as adding numbers, links or a project.',
+    ),
+    turns: ask(
+      [
+        'THE RESUME',
+        resume,
+        '',
+        'ROLES ON HACKSHIFT',
+        ...site.opportunities.map((o) => `- ${o.id}: ${o.title} at ${o.company}, ${o.kind}, ${o.city}${o.remote ? ' (remote ok)' : ''}, ${o.pay}. Skills: ${o.skills.join(', ')}`),
+        '',
+        'CHALLENGES',
+        ...site.challenges.map((c) => `- ${c.id}: ${c.title} from ${c.company}, ${c.hours} hours. Skills: ${c.skills.join(', ')}`),
+        '',
+        'MENTORS',
+        ...site.mentors.map((m) => `- ${m.id}: ${m.name}, ${m.title}. Topics: ${m.expertise.join(', ')}. Speaks: ${m.languages.join(', ')}`),
+      ].join('\n'),
+    ),
+    schema: adviceSchema,
   }
 }

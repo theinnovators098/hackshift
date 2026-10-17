@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, Navigate, Route, Routes } from 'react-router-dom'
-import { Bell, Bookmark, CalendarCheck, CalendarDays, Star, Video, Compass, LayoutDashboard, Lightbulb, Send, UserCog, UserRound, Zap } from 'lucide-react'
+import { Bell, Bookmark, FileSearch, CalendarCheck, CalendarDays, Star, Video, Compass, LayoutDashboard, Lightbulb, Send, UserCog, UserRound, Zap } from 'lucide-react'
 import { toParams } from '../lib/jobs'
 import Calendar from './Calendar'
 import CareerPlan from './CareerPlan'
@@ -9,6 +9,7 @@ import own from './SeekerPanel.module.css'
 import ProfileEditor from './ProfileEditor'
 import ResumePage from './ResumePage'
 import Workspace from './Workspace'
+import ResumeCheck from '../millisa/ResumeCheck'
 import Dashboard from '../pages/Dashboard'
 import { useStore, type ApplicationStatus } from '../store/AppStore'
 import AccountSettings from './AccountSettings'
@@ -418,6 +419,7 @@ export default function SeekerPanel() {
   const nav = [
     { to: '/panel', label: 'Overview', icon: LayoutDashboard, end: true },
     { to: '/panel/profile', label: 'Profile and resume', icon: UserRound },
+    { to: '/panel/resume-check', label: 'Resume check', icon: FileSearch },
     { to: '/panel/applications', label: 'Applications', icon: Send, count: moving },
     { to: '/panel/challenges', label: 'Challenges', icon: Zap },
     { to: '/panel/sessions', label: 'Mentor sessions', icon: CalendarDays },
@@ -435,6 +437,15 @@ export default function SeekerPanel() {
         <Route index element={<Dashboard />} />
         <Route path="profile" element={<ProfileEditor />} />
         <Route path="resume" element={<ResumePage />} />
+        <Route
+          path="resume-check"
+          element={
+            <>
+              <PanelHead title="Resume check" intro="Upload a resume and Millisa suggests roles, fixes and next steps from it. Add the details to your profile in one click." />
+              <ResumeCheck />
+            </>
+          }
+        />
         <Route path="plan" element={<CareerPlan />} />
         <Route path="calendar" element={<Calendar />} />
         <Route path="applications" element={<Applications />} />

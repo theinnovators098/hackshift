@@ -4,6 +4,7 @@ import { Check, Plus } from 'lucide-react'
 import { roleInfo, roleOrder } from '../data/roles'
 import type { Role } from '../data/types'
 import { allSkills, indianCities } from '../lib/match'
+import { mergeResume, takeResumeDraft } from '../lib/resume'
 import { kindFor, kindLabel, useStore, type Profile } from '../store/AppStore'
 import styles from './Onboarding.module.css'
 
@@ -21,9 +22,12 @@ export default function Onboarding() {
   const { profile, saveProfile, signUp } = useStore()
   const navigate = useNavigate()
   const [step, setStep] = useState(0)
-  const [draft, setDraft] = useState<Profile>(
-    profile ?? { name: '', city: '', college: '', roles: [], skills: [], goal: '' },
-  )
+  const [fromResume] = useState(() => (profile ? null : takeResumeDraft()))
+  const [draft, setDraft] = useState<Profile>(() => {
+    const blank: Profile = { name: '', city: '', college: '', roles: [], skills: [], goal: '' }
+    if (profile) return profile
+    return fromResume ? { ...mergeResume(blank, fromResume), roles: ['seeker'] } : blank
+  })
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [customSkill, setCustomSkill] = useState('')
@@ -88,6 +92,7 @@ export default function Onboarding() {
       <aside className={styles.aside}>
         <h1>{profile ? 'Edit your profile' : 'Create your profile'}</h1>
         <p>This is what startups, mentors and recruiters see. You can change any of it later.</p>
+        {fromResume && <p className={styles.signin}>Filled in from your resume. Check each step before you continue.</p>}
         {!profile && (
           <p className={styles.signin}>
             Already on HackShift? <Link to="/login">Sign in</Link>

@@ -97,6 +97,9 @@ export default function Home() {
               Browse opportunities
             </Link>
           </div>
+          <Link to="/resume-check" className={styles.resumeLink}>
+            Have a resume? Let Millisa read it and suggest roles that fit
+          </Link>
           <p className={styles.proof}>
             <strong className="num">2,418</strong> challenges finished this year, by people from{' '}
             <strong className="num">183</strong> cities.

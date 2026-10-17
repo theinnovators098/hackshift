@@ -5,6 +5,7 @@ import { allSkills } from '../lib/match'
 import { askJson, askText, errorText, FAST, MillisaError, SMART } from '../lib/millisa'
 import { resumeRequest, summaryRequest, type ResumeRead } from '../lib/millisaPrompts'
 import { profileScore } from '../lib/profileScore'
+import { checkResumeFile, mergeResume, readAsBase64, resumeAccept } from '../lib/resume'
 import { useMillisa } from '../millisa/MillisaProvider'
 import { MillisaMark, Thinking } from '../millisa/parts'
 import { useStore, type Profile } from '../store/AppStore'
@@ -53,15 +54,6 @@ function Rows<T extends Record<string, string>>({
   )
 }
 
-function readFile(file: File) {
-  return new Promise<string>((resolve, reject) => {
-    const r = new FileReader()
-    r.onload = () => resolve(String(r.result).split(',')[1] ?? '')
-    r.onerror = () => reject(r.error)
-    r.readAsDataURL(file)
-  })
-}
-
 export default function ProfileEditor() {
   const { profile, account, saveProfile, setResume } = useStore()
   const { ensureKey, keyRejected, lang } = useMillisa()
@@ -97,12 +89,9 @@ export default function ProfileEditor() {
     const file = e.target.files?.[0]
     e.target.value = ''
     if (!file) return
-    if (file.type !== 'application/pdf') {
-      setMessage({ ok: false, text: 'Upload your resume as a PDF file.' })
-      return
-    }
-    if (file.size > 4 * 1024 * 1024) {
-      setMessage({ ok: false, text: 'That file is over 4 MB. Save a smaller PDF and try again.' })
+    const problem = checkResumeFile(file)
+    if (problem) {
+      setMessage({ ok: false, text: problem })
       return
     }
     if (!(await ensureKey())) return
@@ -110,8 +99,8 @@ export default function ProfileEditor() {
     setFound(null)
     setMessage(null)
     try {
-      const data = await readFile(file)
-      const { data: read } = await askJson<ResumeRead>({ model: SMART, ...resumeRequest(), files: [{ mimeType: 'application/pdf', data }] })
+      const data = await readAsBase64(file)
+      const { data: read } = await askJson<ResumeRead>({ model: SMART, ...resumeRequest(), files: [{ mimeType: file.type, data }] })
       setFound(read)
       setFileName(file.name)
       setResume(file.name)
@@ -125,22 +114,7 @@ export default function ProfileEditor() {
 
   const useFound = () => {
     if (!found) return
-    const known = (list: object[] = [], key: string, value: string) =>
-      list.some((x) => String((x as Record<string, unknown>)[key] ?? '').trim().toLowerCase() === value.trim().toLowerCase())
-    set({
-      headline: draft.headline?.trim() ? draft.headline : found.headline,
-      about: draft.about?.trim() ? draft.about : found.about,
-      skills: Array.from(new Set([...draft.skills, ...found.skills.filter(Boolean)])),
-      education: [...(draft.education ?? []), ...found.education.filter((x) => x.school && !known(draft.education, 'school', x.school))],
-      work: [...(draft.work ?? []), ...found.work.filter((x) => x.role && !known(draft.work, 'role', x.role))],
-      certificates: [...(draft.certificates ?? []), ...found.certificates.filter((x) => x.name && !known(draft.certificates, 'name', x.name))],
-      links: {
-        github: draft.links?.github || found.links.github,
-        portfolio: draft.links?.portfolio || found.links.portfolio,
-        linkedin: draft.links?.linkedin || found.links.linkedin,
-        website: draft.links?.website || found.links.website,
-      },
-    })
+    set(mergeResume(draft, found))
     setFound(null)
     setMessage({ ok: true, text: 'Added to the form below. Check it, then press Save profile.' })
   }
@@ -211,12 +185,13 @@ export default function ProfileEditor() {
             <div>
               <h2>Fill your profile from your resume</h2>
               <p>
-                Upload a PDF and Millisa reads it. Nothing changes until you add it and save.
-                {account.resume && ` Last read: ${account.resume.name}, on ${account.resume.readOn}.`}
+                Upload a PDF or a photo and Millisa reads it. Nothing changes until you add it and save.
+                {account.resume && ` Last read: ${account.resume.name}, on ${account.resume.readOn}.`}{' '}
+                <Link to="/panel/resume-check">Get role suggestions from your resume</Link>
               </p>
             </div>
           </div>
-          <input ref={fileInput} type="file" accept="application/pdf" hidden onChange={upload} />
+          <input ref={fileInput} type="file" accept={resumeAccept} hidden onChange={upload} />
           {reading ? (
             <Thinking>Millisa is reading your resume</Thinking>
           ) : found ? (

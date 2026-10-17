@@ -4,6 +4,7 @@ import Home from './pages/Home'
 import Onboarding from './pages/Onboarding'
 import Events from './pages/Events'
 import Login from './pages/Login'
+import ResumeCheckPage from './pages/ResumeCheckPage'
 import { AdminGate, MemberGate } from './panel/Gate'
 import Opportunities from './pages/Opportunities'
 import OpportunityDetail from './pages/OpportunityDetail'
@@ -28,6 +29,7 @@ export default function App() {
         <Route path="start" element={<Onboarding />} />
         <Route path="login" element={<Login />} />
         <Route path="events" element={<Events />} />
+        <Route path="resume-check" element={<ResumeCheckPage />} />
         <Route path="dashboard" element={<Navigate to="/panel" replace />} />
         <Route path="panel/*" element={<MemberGate />} />
         <Route path="admin/*" element={<AdminGate />} />

@@ -18,6 +18,7 @@ const titles: Record<string, string> = {
   talent: 'Find talent',
   schemes: 'Government schemes',
   events: 'Events',
+  'resume-check': 'Resume check',
 }
 
 export default function Layout() {
