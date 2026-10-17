@@ -3,7 +3,7 @@ import Layout from './components/Layout'
 import Home from './pages/Home'
 import Onboarding from './pages/Onboarding'
 import Login from './pages/Login'
-import { MemberGate } from './panel/Gate'
+import { AdminGate, MemberGate } from './panel/Gate'
 import Opportunities from './pages/Opportunities'
 import OpportunityDetail from './pages/OpportunityDetail'
 import Practice from './pages/Practice'
@@ -28,6 +28,7 @@ export default function App() {
         <Route path="login" element={<Login />} />
         <Route path="dashboard" element={<Navigate to="/panel" replace />} />
         <Route path="panel/*" element={<MemberGate />} />
+        <Route path="admin/*" element={<AdminGate />} />
         <Route path="opportunities" element={<Opportunities />} />
         <Route path="opportunities/:id" element={<OpportunityDetail />} />
         <Route path="opportunities/:id/practice" element={<Practice />} />
