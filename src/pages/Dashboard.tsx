@@ -3,6 +3,7 @@ import { CalendarDays, Check, MapPin, Pencil } from 'lucide-react'
 import { roleInfo } from '../data/roles'
 import { matchChallenges, matchOpportunities, greeting } from '../lib/match'
 import { profileScore } from '../lib/profileScore'
+import { modeOf } from '../lib/jobs'
 import { Status } from '../panel/ui'
 import { useStore } from '../store/AppStore'
 import styles from './Dashboard.module.css'
@@ -88,8 +89,13 @@ export default function Dashboard() {
                     <div>
                       <p className={styles.rowTitle}>{item.title}</p>
                       <p className={styles.rowSub}>
-                        {item.company}, {item.city}
-                        {item.remote && ' (remote ok)'}
+                        {item.company}, {item.city}, {modeOf(item).toLowerCase()}
+                      </p>
+                      <p className={styles.why}>
+                        {hits.length > 0
+                          ? `You have ${hits.join(' and ')}${item.skills.length > hits.length ? `. Missing ${item.skills.filter((s) => !hits.includes(s)).join(', ')}` : ''}`
+                          : 'New role. None of your listed skills match yet'}
+                        {item.challengeId ? '. Has a challenge to skip the queue' : ''}
                       </p>
                     </div>
                     <div className={styles.rowEnd}>

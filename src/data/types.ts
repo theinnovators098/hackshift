@@ -64,6 +64,52 @@ export interface Venture extends Owned {
   lookingFor: string[]
   team: number
   mine?: boolean
+  solution?: string
+  customer?: string
+  model?: string
+  demoLink?: string
+  achievements?: string[]
+  plan?: BusinessPlan
+  mvp?: MvpPlan
+  deck?: { slides: { title: string; points: string[] }[]; madeOn: string }
+  budget?: Budget
+  tasks?: VentureTask[]
+  reviews?: { mentorId: string; text: string; on: string }[]
+}
+
+export interface BusinessPlan {
+  summary: string
+  customer: string
+  market: string
+  model: string
+  operations: string
+  risks: string[]
+  first90: string[]
+  madeOn: string
+}
+
+export interface MvpPlan {
+  must: string[]
+  should: string[]
+  later: string[]
+  journey: string[]
+  milestones: { week: number; goal: string }[]
+  madeOn: string
+}
+
+export interface Budget {
+  cash: number
+  costs: { label: string; amount: number }[]
+  price: number
+  customers: number
+  newPerMonth: number
+}
+
+export interface VentureTask {
+  id: string
+  title: string
+  due: string
+  done: boolean
 }
 
 export interface Mentor extends Owned {

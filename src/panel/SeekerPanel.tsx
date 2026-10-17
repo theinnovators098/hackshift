@@ -8,6 +8,7 @@ import { interviewTime } from './hiring'
 import own from './SeekerPanel.module.css'
 import ProfileEditor from './ProfileEditor'
 import ResumePage from './ResumePage'
+import Workspace from './Workspace'
 import Dashboard from '../pages/Dashboard'
 import { useStore, type ApplicationStatus } from '../store/AppStore'
 import AccountSettings from './AccountSettings'
@@ -304,7 +305,7 @@ function MyVentures() {
   const interestCount = (id: string) => data.accounts.filter((a) => a.lists.interested.includes(id)).length
   return (
     <>
-      <PanelHead title="My ventures" intro="Ideas you posted, their stage, and who wants to help.">
+      <PanelHead title="Founder workspace" intro="Pick a venture to plan it, cost it, build the team and track milestones.">
         <Link to="/ventures/new" className="btn btn-accent btn-sm">
           Post an idea
         </Link>
@@ -326,7 +327,7 @@ function MyVentures() {
               {myVentures.map((v) => (
                 <tr key={v.id}>
                   <td>
-                    <Link to={`/ventures/${v.id}`} className={styles.cellTitle}>
+                    <Link to={`/panel/ventures/${v.id}`} className={styles.cellTitle}>
                       {v.name}
                     </Link>
                     <p className={styles.cellSub}>{v.oneLiner}</p>
@@ -361,7 +362,7 @@ export default function SeekerPanel() {
     { to: '/panel/calendar', label: 'Calendar', icon: CalendarCheck },
     { to: '/panel/plan', label: 'Career plan', icon: Compass },
     { to: '/panel/saved', label: 'Saved', icon: Bookmark },
-    ...(founder ? [{ to: '/panel/ventures', label: 'My ventures', icon: Lightbulb }] : []),
+    ...(founder ? [{ to: '/panel/ventures', label: 'Founder workspace', icon: Lightbulb }] : []),
     ...shared,
     { to: '/panel/account', label: 'Account', icon: UserCog },
   ]
@@ -379,6 +380,7 @@ export default function SeekerPanel() {
         <Route path="sessions" element={<Sessions />} />
         <Route path="saved" element={<Saved />} />
         <Route path="ventures" element={<MyVentures />} />
+        <Route path="ventures/:id" element={<Workspace />} />
         {sharedRoutes()}
         <Route path="account" element={<AccountSettings />} />
         <Route path="*" element={<Navigate to="/panel" replace />} />

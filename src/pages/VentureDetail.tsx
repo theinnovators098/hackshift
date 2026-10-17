@@ -73,6 +73,28 @@ export default function VentureDetail() {
             <h2>The problem</h2>
             <p>{v.problem}</p>
           </section>
+          {v.solution && (
+            <section>
+              <h2>The solution</h2>
+              <p>{v.solution}</p>
+              {v.demoLink && (
+                <p className={styles.muted}>
+                  <a href={v.demoLink} target="_blank" rel="noreferrer">
+                    See the demo
+                  </a>
+                </p>
+              )}
+            </section>
+          )}
+          {(v.customer || v.model) && (
+            <section>
+              <h2>Customer and business model</h2>
+              <ul className={styles.bullets}>
+                {v.customer && <li>For: {v.customer}</li>}
+                {v.model && <li>Makes money by: {v.model}</li>}
+              </ul>
+            </section>
+          )}
           {v.progress.length > 0 && (
             <section>
               <h2>Proof so far</h2>
@@ -97,6 +119,9 @@ export default function VentureDetail() {
           <div className={styles.panel}>
             {v.mine ? (
               <>
+                <Link to={`/panel/ventures/${v.id}`} className="btn btn-accent">
+                  Open founder workspace
+                </Link>
                 <label className="field">
                   <span>Stage</span>
                   <select className="input" value={v.stage} onChange={(e) => moveVenture(v.id, e.target.value as typeof v.stage)}>

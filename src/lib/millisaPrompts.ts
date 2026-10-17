@@ -597,3 +597,101 @@ export function pipelineRequest(rows: string[]) {
     turns: ask(rows.join('\n') || 'No applicants yet.'),
   }
 }
+
+function ventureBlock(v: Venture) {
+  return [
+    `Name: ${v.name}`,
+    `One line: ${v.oneLiner}`,
+    `Sector: ${v.sector}, city: ${v.city}, stage: ${v.stage}, team of ${v.team}`,
+    `Problem: ${v.problem}`,
+    v.solution && `Solution: ${v.solution}`,
+    v.customer && `Target customer: ${v.customer}`,
+    v.model && `How it makes money: ${v.model}`,
+    `Proof so far: ${v.progress.join('; ') || 'none yet'}`,
+    `Looking for: ${v.lookingFor.join(', ') || 'not given'}`,
+  ]
+    .filter(Boolean)
+    .join('\n')
+}
+
+const ventureRules = [
+  'Write for a first-time founder in India. Be concrete and honest, and keep every section short.',
+  'Never invent market sizes, revenue numbers, customers or funding. Where a number is needed, say how the founder can find it, for example "count shops in two wards".',
+]
+
+export const businessPlanSchema = {
+  type: 'object',
+  properties: {
+    summary: { type: 'string', description: 'Three sentences: problem, solution, why now' },
+    customer: { type: 'string', description: 'Who pays and who uses it, two sentences' },
+    market: { type: 'string', description: 'How to size the first market in their city, without made-up numbers' },
+    model: { type: 'string', description: 'How it makes money and a simple first price to test' },
+    operations: { type: 'string', description: 'What the first team does every week' },
+    risks: list('The three biggest risks'),
+    first90: list('Five things to do in the first 90 days'),
+  },
+  required: ['summary', 'customer', 'market', 'model', 'operations', 'risks', 'first90'],
+}
+
+export function businessPlanRequest(v: Venture, lang: Lang) {
+  return { system: system(lang, 'Write a one-page business plan for this venture.', ...ventureRules), turns: ask(ventureBlock(v)), schema: businessPlanSchema }
+}
+
+export const mvpSchema = {
+  type: 'object',
+  properties: {
+    must: list('Three to five features the first version cannot ship without'),
+    should: list('Up to four features for soon after'),
+    later: list('Up to four ideas to leave out for now'),
+    journey: list('The first user journey as five to seven short steps'),
+    milestones: {
+      type: 'array',
+      minItems: 4,
+      maxItems: 6,
+      items: { type: 'object', properties: { week: { type: 'integer' }, goal: { type: 'string' } }, required: ['week', 'goal'] },
+    },
+  },
+  required: ['must', 'should', 'later', 'journey', 'milestones'],
+}
+
+export function mvpRequest(v: Venture, lang: Lang) {
+  return {
+    system: system(
+      lang,
+      'Plan the smallest first version that tests whether people want this. Prefer no-code, WhatsApp or a spreadsheet when it is enough.',
+      ...ventureRules,
+    ),
+    turns: ask(ventureBlock(v)),
+    schema: mvpSchema,
+  }
+}
+
+export const deckSchema = {
+  type: 'object',
+  properties: {
+    slides: {
+      type: 'array',
+      minItems: 8,
+      maxItems: 10,
+      items: {
+        type: 'object',
+        properties: { title: { type: 'string' }, points: list('Two to four short points') },
+        required: ['title', 'points'],
+      },
+    },
+  },
+  required: ['slides'],
+}
+
+export function deckRequest(v: Venture, lang: Lang) {
+  return {
+    system: system(
+      lang,
+      'Draft a first pitch deck outline: problem, solution, customer, proof, business model, market approach, competition, team, the ask, and what the money is for.',
+      ...ventureRules,
+      'Where the founder must add a real number or name, write it in square brackets, such as [number of pilot shops].',
+    ),
+    turns: ask(`${ventureBlock(v)}${v.plan ? `\nPlan summary: ${v.plan.summary}` : ''}`),
+    schema: deckSchema,
+  }
+}

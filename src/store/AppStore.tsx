@@ -455,6 +455,8 @@ function useAppState() {
         update((d) => withLog({ ...d, mentors: d.mentors.map((x) => (x.id === m.id ? m : x)) }, `${nameOf(d)} updated the mentor profile of ${m.name}`)),
 
       addVenture: (v: Venture) => saveContent('ventures', v, v.name),
+      updateVenture: (id: string, patch: Partial<Venture>) =>
+        update((d) => ({ ...d, ventures: d.ventures.map((v) => (v.id === id && v.ownerId === d.session ? { ...v, ...patch } : v)) })),
       moveVenture: (id: string, stage: Stage) =>
         update((d) => ({ ...d, ventures: d.ventures.map((v) => (v.id === id ? { ...v, stage } : v)) })),
 
