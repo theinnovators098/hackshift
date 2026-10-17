@@ -4,6 +4,7 @@ import { ArrowLeft } from 'lucide-react'
 import { stageHelp, stages } from '../data/ventures'
 import type { Stage } from '../data/types'
 import { indianCities } from '../lib/match'
+import IdeaCheck from '../millisa/IdeaCheck'
 import { useStore } from '../store/AppStore'
 import styles from './NewVenture.module.css'
 
@@ -163,6 +164,12 @@ export default function NewVenture() {
             ))}
           </div>
         </fieldset>
+
+        <IdeaCheck
+          idea={{ name, oneLiner, sector, city, stage, problem, progress, needs }}
+          onUseOneLiner={setOneLiner}
+          onUseStage={setStage}
+        />
 
         {error && (
           <p className={styles.error} role="alert">

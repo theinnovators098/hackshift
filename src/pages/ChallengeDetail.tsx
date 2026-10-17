@@ -3,6 +3,7 @@ import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, BadgeCheck, CalendarClock, Clock, Gauge, Users } from 'lucide-react'
 import { challenges } from '../data/challenges'
 import { opportunities } from '../data/opportunities'
+import PreReview from '../millisa/PreReview'
 import { useStore } from '../store/AppStore'
 import NotFound from './NotFound'
 import styles from './Detail.module.css'
@@ -188,6 +189,8 @@ export default function ChallengeDetail() {
               </>
             )}
           </div>
+
+          {showForm && <PreReview challenge={c} link={link} note={note} onUseNote={setNote} />}
 
           {role && (
             <div className={styles.callout}>
