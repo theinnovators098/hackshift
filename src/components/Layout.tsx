@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import Header from './Header'
 import Footer from './Footer'
+import MillisaPanel from '../millisa/MillisaPanel'
 
 const titles: Record<string, string> = {
   '': 'HackShift',
@@ -36,6 +37,7 @@ export default function Layout() {
         <Outlet />
       </main>
       <Footer />
+      <MillisaPanel />
     </>
   )
 }
