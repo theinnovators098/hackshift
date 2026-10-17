@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import type { Challenge, Mentor, Opportunity, Person, Role, Scheme, Stage, Venture, Visibility } from '../data/types'
+import type { Challenge, HackEvent, Mentor, Opportunity, Person, Role, Scheme, Stage, Venture, Visibility } from '../data/types'
 import { describe, matches } from '../lib/jobs'
 import { seed } from './seed'
 import type {
@@ -548,6 +548,32 @@ function useAppState() {
           }
           next = notify(next, v.ownerId ?? founder?.id, `${me.name} reviewed ${v.name}. Read the feedback in your workspace.`, `/panel/ventures/${ventureId}`)
           return withLog(next, `${me.name} reviewed the venture ${v.name}`)
+        }),
+
+      events: data.events
+        .filter((e) => !e.hidden && new Date(e.ends).getTime() >= Date.now())
+        .sort((a, b) => (a.starts < b.starts ? -1 : 1)),
+      toggleRegistration: (id: string) =>
+        update((d) => ({
+          ...d,
+          events: d.events.map((e) =>
+            e.id === id && d.session
+              ? { ...e, registered: e.registered.includes(d.session) ? e.registered.filter((x) => x !== d.session) : [...e.registered, d.session] }
+              : e,
+          ),
+        })),
+      saveEvent: (e: HackEvent) =>
+        update((d) => {
+          const exists = d.events.some((x) => x.id === e.id)
+          return withLog(
+            { ...d, events: exists ? d.events.map((x) => (x.id === e.id ? e : x)) : [...d.events, e] },
+            `${nameOf(d)} ${exists ? 'updated' : 'added'} the event "${e.title}"`,
+          )
+        }),
+      deleteEvent: (id: string) =>
+        update((d) => {
+          const e = d.events.find((x) => x.id === id)
+          return withLog({ ...d, events: d.events.filter((x) => x.id !== id) }, `${nameOf(d)} deleted the event "${e?.title}"`)
         }),
 
       reports: data.reports,

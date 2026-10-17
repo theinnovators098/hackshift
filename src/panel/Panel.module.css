@@ -674,3 +674,10 @@ a.stat:hover {
     grid-template-columns: 1fr 1fr;
   }
 }
+
+.table input[type='checkbox'] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--ink);
+  cursor: pointer;
+}

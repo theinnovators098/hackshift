@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout'
 import Home from './pages/Home'
 import Onboarding from './pages/Onboarding'
+import Events from './pages/Events'
 import Login from './pages/Login'
 import { AdminGate, MemberGate } from './panel/Gate'
 import Opportunities from './pages/Opportunities'
@@ -26,6 +27,7 @@ export default function App() {
         <Route index element={<Home />} />
         <Route path="start" element={<Onboarding />} />
         <Route path="login" element={<Login />} />
+        <Route path="events" element={<Events />} />
         <Route path="dashboard" element={<Navigate to="/panel" replace />} />
         <Route path="panel/*" element={<MemberGate />} />
         <Route path="admin/*" element={<AdminGate />} />

@@ -43,6 +43,7 @@
 }
 
 .nav a {
+  white-space: nowrap;
   padding: 8px 10px;
   border-radius: var(--r-control);
   color: var(--ink-2);
@@ -126,6 +127,7 @@
 }
 
 .signIn {
+  white-space: nowrap;
   padding: 8px 10px;
   font-weight: 600;
   font-size: var(--t-sm);
@@ -149,6 +151,27 @@
 
 .mobileCta {
   display: none;
+}
+
+@media (max-width: 1300px) {
+  .bar {
+    gap: 20px;
+  }
+
+  .nav a {
+    padding: 8px 7px;
+  }
+
+  .searchText,
+  .kbd {
+    display: none;
+  }
+
+  .search {
+    width: 40px;
+    padding: 0;
+    justify-content: center;
+  }
 }
 
 @media (max-width: 1020px) {

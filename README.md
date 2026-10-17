@@ -25,6 +25,7 @@ HackShift puts job seekers, founders, startups, mentors and recruiters on one pl
 | Dashboard | Changes with your role. Matched roles explain why they match. |
 | Messages and notifications | Direct messages between any two accounts, and a bell for every update that matters to you. |
 | Search | Press Ctrl K anywhere to search roles, challenges, mentors, ideas and schemes. |
+| Events | A banner across the top of the homepage slides through featured hackathons, demo days, workshops and hiring drives. People register in one click and the event joins their calendar. The super admin picks what appears in the banner. |
 | Trust | Verified badges for companies and mentors, reports on any post or account, and a review queue before new posts go live. |
 
 ## Panels for every role

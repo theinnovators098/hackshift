@@ -161,3 +161,22 @@ export interface Shift {
   to: string
   via: string
 }
+
+export type EventKind = 'Hackathon' | 'Demo day' | 'Workshop' | 'Hiring drive' | 'Meetup'
+
+export interface HackEvent {
+  id: string
+  title: string
+  kind: EventKind
+  host: string
+  city: string
+  online: boolean
+  starts: string
+  ends: string
+  blurb: string
+  highlight?: string
+  link?: string
+  featured: boolean
+  hidden?: boolean
+  registered: string[]
+}

@@ -13,6 +13,7 @@ const links = [
   { to: '/mentors', label: 'Mentors' },
   { to: '/talent', label: 'Find talent' },
   { to: '/schemes', label: 'Schemes' },
+  { to: '/events', label: 'Events' },
 ]
 
 export default function Header() {

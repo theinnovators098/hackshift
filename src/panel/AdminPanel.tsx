@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, BadgeCheck, BarChart3, FileStack, Flag, History, Inbox, Landmark, LayoutDashboard, Settings as SettingsIcon, UserCog, Users } from 'lucide-react'
+import { ArrowLeft, BadgeCheck, BarChart3, CalendarRange, FileStack, Flag, History, Inbox, Landmark, LayoutDashboard, Settings as SettingsIcon, UserCog, Users } from 'lucide-react'
 import { stages } from '../data/ventures'
 import type { FounderGroup, Scheme, SchemeNeed, Stage, Visibility } from '../data/types'
 import MessageButton from '../components/MessageButton'
@@ -8,7 +8,7 @@ import Verified from '../components/Verified'
 import { useMillisa } from '../millisa/MillisaProvider'
 import { kindLabel, panelPath, useStore, type AccountKind, type ContentKind } from '../store/AppStore'
 import AccountSettings from './AccountSettings'
-import { Analytics, MillisaMonitor, Reports } from './AdminMore'
+import { AdminEvents, Analytics, MillisaMonitor, Reports } from './AdminMore'
 import { MillisaMarkIcon } from './MillisaIcon'
 import { ChallengeEditor, RoleEditor } from './Editors'
 import { sharedRoutes, useSharedNav } from './shared'
@@ -781,6 +781,7 @@ export default function AdminPanel() {
     { to: '/admin/verification', label: 'Verification', icon: BadgeCheck, count: verifyWaiting },
     { to: '/admin/reports', label: 'Reports', icon: Flag, count: openReports },
     { to: '/admin/content', label: 'Content', icon: FileStack },
+    { to: '/admin/events', label: 'Events', icon: CalendarRange },
     { to: '/admin/schemes', label: 'Schemes', icon: Landmark },
     { to: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
     { to: '/admin/millisa', label: 'Millisa', icon: MillisaMarkIcon },
@@ -803,6 +804,7 @@ export default function AdminPanel() {
         <Route path="schemes/new" element={<SchemeEditor />} />
         <Route path="schemes/:id" element={<SchemeEditor />} />
         <Route path="reports" element={<Reports />} />
+        <Route path="events" element={<AdminEvents />} />
         <Route path="analytics" element={<Analytics />} />
         <Route path="millisa" element={<MillisaMonitor />} />
         <Route path="activity" element={<Activity />} />

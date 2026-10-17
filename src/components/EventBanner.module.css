@@ -1,0 +1,296 @@
+.banner {
+  background: var(--ink);
+  color: #fff;
+  border-bottom: 4px solid var(--marigold);
+}
+
+.inner {
+  display: grid;
+  gap: 18px;
+  padding-block: 28px 20px;
+}
+
+.slide {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 230px;
+  gap: 40px;
+  align-items: center;
+  min-height: 236px;
+  animation: enter 0.45s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateX(18px);
+  }
+}
+
+.copy {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  font-size: var(--t-sm);
+  color: #9196b5;
+}
+
+.when {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 2px 10px;
+  border-radius: var(--r-tag);
+  background: #2c325a;
+  color: var(--marigold);
+  font-weight: 700;
+}
+
+.live {
+  background: var(--marigold);
+  color: var(--ink);
+}
+
+.pulse {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--rose);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  50% {
+    opacity: 0.3;
+  }
+}
+
+.title {
+  font-size: clamp(var(--t-2xl), 4.2vw, var(--t-4xl));
+  font-variation-settings: 'wdth' 118;
+  letter-spacing: -0.03em;
+  line-height: 1.02;
+  max-width: 22ch;
+}
+
+.highlight {
+  color: var(--marigold);
+  font-weight: 600;
+  font-size: var(--t-md);
+}
+
+.blurb {
+  max-width: 62ch;
+  color: #c9cce0;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-top: 6px;
+}
+
+.goingBtn {
+  background: transparent;
+  border-color: #474d7a;
+  color: #fff;
+}
+
+.goingBtn:hover {
+  border-color: var(--marigold);
+}
+
+.more {
+  color: #fff;
+  font-weight: 600;
+  text-decoration-color: var(--marigold);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+.date {
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  padding: 18px 16px 16px;
+  border: 1px solid #3a3f6b;
+  border-radius: var(--r-panel);
+  background: #222750;
+  text-align: center;
+}
+
+.month {
+  color: var(--marigold);
+  font-weight: 700;
+  font-size: var(--t-md);
+}
+
+.day {
+  font-size: 4.25rem;
+  font-weight: 800;
+  font-variation-settings: 'wdth' 125;
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+}
+
+.place {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 8px;
+  font-weight: 600;
+}
+
+.time {
+  color: #9196b5;
+  font-size: var(--t-xs);
+}
+
+.count {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #3a3f6b;
+  width: 100%;
+  color: #c9cce0;
+  font-size: var(--t-xs);
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.dots {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+  max-width: 420px;
+}
+
+.dots button {
+  flex: 1;
+  height: 20px;
+  padding: 8px 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.dots span {
+  position: relative;
+  display: block;
+  height: 4px;
+  border-radius: 2px;
+  background: #3a3f6b;
+  overflow: hidden;
+}
+
+.dots button[aria-current='true'] span {
+  background: #5a6094;
+}
+
+.dots button[aria-current='true'] span::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--marigold);
+}
+
+.dots span.running::after {
+  transform-origin: left;
+  animation: fill 6.5s linear;
+}
+
+@keyframes fill {
+  from {
+    transform: scaleX(0);
+  }
+}
+
+.arrows {
+  display: flex;
+  gap: 6px;
+}
+
+.arrows button {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid #3a3f6b;
+  border-radius: 50%;
+  background: none;
+  color: #fff;
+  cursor: pointer;
+}
+
+.arrows button:hover {
+  border-color: var(--marigold);
+  color: var(--marigold);
+}
+
+@media (max-width: 760px) {
+  .slide {
+    grid-template-columns: 1fr;
+    gap: 18px;
+    min-height: 0;
+  }
+
+  .date {
+    grid-template-columns: auto auto 1fr;
+    justify-items: start;
+    align-items: center;
+    gap: 4px 12px;
+    padding: 12px 14px;
+    text-align: left;
+  }
+
+  .month {
+    grid-row: 1;
+  }
+
+  .day {
+    grid-row: 1;
+    font-size: var(--t-3xl);
+  }
+
+  .place,
+  .time {
+    grid-column: 3;
+    margin: 0;
+  }
+
+  .place {
+    grid-row: 1;
+  }
+
+  .time {
+    grid-row: 2;
+  }
+
+  .count {
+    grid-column: 1 / -1;
+    margin-top: 4px;
+    text-align: left;
+  }
+
+  .inner {
+    padding-block: 20px 14px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .slide {
+    animation: none;
+  }
+}

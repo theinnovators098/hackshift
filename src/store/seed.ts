@@ -113,6 +113,14 @@ function interviewAt(days: number, hour: number) {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:00`
 }
 
+function at(days: number, hour: number, minute = 0) {
+  const d = new Date()
+  d.setDate(d.getDate() + days)
+  d.setHours(hour, minute, 0, 0)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+}
+
 function minutesAgo(n: number) {
   return new Date(Date.now() - n * 60000).toISOString()
 }
@@ -517,6 +525,79 @@ export function seed(): Data {
         note: 'The equity range is wide and there is no mention of vesting or a written agreement.',
         at: minutesAgo(400),
         status: 'open',
+      },
+    ],
+    events: [
+      {
+        id: 'hack-shift-iiitd',
+        title: 'Hack Shift 2026',
+        kind: 'Hackathon',
+        host: 'IIIT Delhi',
+        city: 'New Delhi',
+        online: false,
+        starts: at(-1, 9),
+        ends: at(1, 18),
+        blurb: 'The national hackathon on entrepreneurship and employment. Teams build tools that connect talent, ideas and opportunities.',
+        highlight: 'Connecting Talent, Ideas, and Opportunities',
+        featured: true,
+        registered: [],
+      },
+      {
+        id: 'founder-friday-indore',
+        title: 'Founder Friday: five-minute pitches',
+        kind: 'Meetup',
+        host: 'HackShift',
+        city: 'Indore',
+        online: false,
+        starts: at(6, 18, 30),
+        ends: at(6, 21),
+        blurb: 'Pitch your idea to founders and mentors in five minutes and leave with three pieces of feedback. Ideas at any stage are welcome.',
+        highlight: '20 pitch slots',
+        featured: true,
+        registered: ['acc-tanvi-desai'],
+      },
+      {
+        id: 'tapri-hiring-sprint',
+        title: 'Tapri Pay 48-hour hiring sprint',
+        kind: 'Hiring drive',
+        host: 'Tapri Pay',
+        city: 'Pune',
+        online: true,
+        starts: at(9, 10),
+        ends: at(11, 10),
+        blurb: 'Finish the payment screen challenge in 48 hours. The best five submissions get an interview for the frontend internship the same week.',
+        highlight: '₹18,000 a month internship',
+        link: '/challenges/tapri-checkout',
+        featured: true,
+        registered: ['acc-vikram-joshi'],
+      },
+      {
+        id: 'resume-to-offer',
+        title: 'Resume to offer: live interview practice',
+        kind: 'Workshop',
+        host: 'Meera Iyer',
+        city: 'Online',
+        online: true,
+        starts: at(12, 19),
+        ends: at(12, 20, 30),
+        blurb: 'A product lead walks through three real interviews, then everyone practises one answer with feedback. Bring a role you want to apply for.',
+        highlight: 'Free, in English and Hindi',
+        featured: false,
+        registered: [],
+      },
+      {
+        id: 'bharat-demo-day',
+        title: 'HackShift Demo Day: startups from Tier-2 cities',
+        kind: 'Demo day',
+        host: 'HackShift',
+        city: 'Bengaluru',
+        online: false,
+        starts: at(25, 11),
+        ends: at(25, 17),
+        blurb: 'Ten ventures from cities like Patna, Jaipur and Kochi show what they built to mentors, recruiters and incubators.',
+        highlight: '10 startups on stage',
+        featured: true,
+        registered: [],
       },
     ],
     settings: { reviewPosts: true, millisaDailyLimit: 80, guestMillisa: true },

@@ -1,8 +1,10 @@
-import { useState } from 'react'
+import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
+import type { EventKind, HackEvent } from '../data/types'
+import { eventTiming } from '../lib/events'
 import { overlap } from '../lib/match'
 import { kindLabel, useStore, type Report } from '../store/AppStore'
-import { Empty, PanelHead, Section, Stats, timeAgo, panelStyles as styles } from './ui'
+import { Empty, PanelHead, Section, slug, Stats, timeAgo, panelStyles as styles } from './ui'
 import own from './AdminPanel.module.css'
 
 const targetLink: Record<Report['kind'], (id: string) => string> = {
@@ -277,6 +279,210 @@ export function Analytics() {
         <Section title="Ventures by stage">
           <Bars rows={['Idea', 'Validated', 'MVP', 'Funded'].map((s) => ({ label: s, n: data.ventures.filter((v) => v.stage === s).length }))} />
         </Section>
+      </div>
+    </>
+  )
+}
+
+const eventKinds: EventKind[] = ['Hackathon', 'Demo day', 'Workshop', 'Hiring drive', 'Meetup']
+
+function blankEvent(): HackEvent {
+  const d = new Date(Date.now() + 7 * 86400000)
+  const pad = (n: number) => String(n).padStart(2, '0')
+  const day = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+  return {
+    id: '',
+    title: '',
+    kind: 'Workshop',
+    host: 'HackShift',
+    city: '',
+    online: false,
+    starts: `${day}T18:00`,
+    ends: `${day}T20:00`,
+    blurb: '',
+    featured: true,
+    registered: [],
+  }
+}
+
+function EventForm({ initial, onDone }: { initial: HackEvent; onDone: () => void }) {
+  const { saveEvent } = useStore()
+  const [e, setE] = useState<HackEvent>(initial)
+  const [error, setError] = useState('')
+  const set = (patch: Partial<HackEvent>) => {
+    setE((x) => ({ ...x, ...patch }))
+    setError('')
+  }
+
+  const save = (ev: FormEvent) => {
+    ev.preventDefault()
+    if (!e.title.trim() || !e.host.trim() || e.blurb.trim().length < 20 || (!e.online && !e.city.trim())) {
+      setError('Add a title, the host, a city (or mark it online) and a description of a sentence or two.')
+      return
+    }
+    if (new Date(e.ends) <= new Date(e.starts)) {
+      setError('The event has to end after it starts.')
+      return
+    }
+    saveEvent({
+      ...e,
+      id: e.id || slug(e.title),
+      title: e.title.trim(),
+      host: e.host.trim(),
+      city: e.online ? 'Online' : e.city.trim(),
+      blurb: e.blurb.trim(),
+      highlight: e.highlight?.trim() || undefined,
+      link: e.link?.trim() || undefined,
+    })
+    onDone()
+  }
+
+  return (
+    <form className={styles.form} onSubmit={save} noValidate>
+      <div className={styles.formRow}>
+        <label className="field">
+          <span>Title</span>
+          <input className="input" value={e.title} onChange={(x) => set({ title: x.target.value })} />
+        </label>
+        <label className="field">
+          <span>Type</span>
+          <select className="input" value={e.kind} onChange={(x) => set({ kind: x.target.value as EventKind })}>
+            {eventKinds.map((k) => (
+              <option key={k}>{k}</option>
+            ))}
+          </select>
+        </label>
+      </div>
+      <div className={styles.formRow3}>
+        <label className="field">
+          <span>Hosted by</span>
+          <input className="input" value={e.host} onChange={(x) => set({ host: x.target.value })} />
+        </label>
+        <label className="field">
+          <span>Starts</span>
+          <input className="input" type="datetime-local" value={e.starts} onChange={(x) => set({ starts: x.target.value })} />
+        </label>
+        <label className="field">
+          <span>Ends</span>
+          <input className="input" type="datetime-local" value={e.ends} onChange={(x) => set({ ends: x.target.value })} />
+        </label>
+      </div>
+      <div className={styles.formRow}>
+        <label className="field">
+          <span>City</span>
+          <input className="input" value={e.online ? 'Online' : e.city} disabled={e.online} onChange={(x) => set({ city: x.target.value })} />
+        </label>
+        <label className="field">
+          <span>Highlight on the banner</span>
+          <input className="input" value={e.highlight ?? ''} onChange={(x) => set({ highlight: x.target.value })} placeholder="₹1 lakh in prizes, or 20 pitch slots" />
+        </label>
+      </div>
+      <label className="field">
+        <span>What happens there</span>
+        <textarea className="input" value={e.blurb} onChange={(x) => set({ blurb: x.target.value })} />
+      </label>
+      <label className="field">
+        <span>Link on HackShift (optional)</span>
+        <input className="input" value={e.link ?? ''} onChange={(x) => set({ link: x.target.value })} placeholder="/challenges/tapri-checkout" />
+      </label>
+      <div className={styles.toolbar}>
+        <label className={styles.check}>
+          <input type="checkbox" checked={e.online} onChange={(x) => set({ online: x.target.checked })} />
+          Online event
+        </label>
+        <label className={styles.check}>
+          <input type="checkbox" checked={e.featured} onChange={(x) => set({ featured: x.target.checked })} />
+          Show in the homepage banner
+        </label>
+      </div>
+      {error && (
+        <p className={styles.error} role="alert">
+          {error}
+        </p>
+      )}
+      <div className={styles.formActions}>
+        <button type="submit" className="btn btn-primary btn-sm">
+          {initial.id ? 'Save event' : 'Add event'}
+        </button>
+        <button type="button" className="btn btn-ghost btn-sm" onClick={onDone}>
+          Cancel
+        </button>
+      </div>
+    </form>
+  )
+}
+
+export function AdminEvents() {
+  const { data, saveEvent, deleteEvent } = useStore()
+  const [editing, setEditing] = useState<HackEvent | null>(null)
+  const list = [...data.events].sort((a, b) => (a.starts < b.starts ? -1 : 1))
+  const ended = (e: HackEvent) => new Date(e.ends).getTime() < Date.now()
+
+  return (
+    <>
+      <PanelHead title="Events" intro="Events marked for the banner slide across the top of the homepage, soonest first. Past events drop off on their own.">
+        {!editing && (
+          <button type="button" className="btn btn-accent btn-sm" onClick={() => setEditing(blankEvent())}>
+            Add an event
+          </button>
+        )}
+      </PanelHead>
+      {editing && <EventForm key={editing.id || 'new'} initial={editing} onDone={() => setEditing(null)} />}
+      <div className={styles.tableWrap}>
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th>Event</th>
+              <th>When</th>
+              <th>Going</th>
+              <th>In banner</th>
+              <th>Shown</th>
+              <th className={styles.actions}>
+                <span className="visually-hidden">Actions</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            {list.map((e) => {
+              const t = eventTiming(e)
+              return (
+                <tr key={e.id}>
+                  <td>
+                    <p className={styles.cellTitle}>{e.title}</p>
+                    <p className={styles.cellSub}>
+                      {e.kind} by {e.host}, {e.online ? 'online' : e.city}
+                    </p>
+                  </td>
+                  <td>
+                    {t.date}
+                    <p className={styles.cellSub}>{ended(e) ? 'Ended' : t.label}</p>
+                  </td>
+                  <td className="num">{e.registered.length}</td>
+                  <td>
+                    <input type="checkbox" checked={e.featured} onChange={(x) => saveEvent({ ...e, featured: x.target.checked })} aria-label={`Show ${e.title} in the banner`} />
+                  </td>
+                  <td>
+                    <input type="checkbox" checked={!e.hidden} onChange={(x) => saveEvent({ ...e, hidden: !x.target.checked })} aria-label={`Show ${e.title} on HackShift`} />
+                  </td>
+                  <td className={styles.actions}>
+                    <span className={styles.rowActions}>
+                      <button type="button" className={styles.link} onClick={() => setEditing(e)}>
+                        Edit
+                      </button>
+                      <button
+                        type="button"
+                        className={`${styles.link} ${styles.danger}`}
+                        onClick={() => window.confirm(`Delete ${e.title}?`) && deleteEvent(e.id)}
+                      >
+                        Delete
+                      </button>
+                    </span>
+                  </td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
       </div>
     </>
   )

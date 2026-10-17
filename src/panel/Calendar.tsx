@@ -59,6 +59,20 @@ export default function Calendar() {
     })
   }
 
+  for (const ev of data.events) {
+    if (!ev.registered.includes(account.id) || ev.hidden) continue
+    const start = new Date(ev.starts)
+    add({
+      id: `e-${ev.id}`,
+      at: start,
+      minutes: Math.max(30, Math.round((new Date(ev.ends).getTime() - start.getTime()) / 60000)),
+      title: ev.title,
+      detail: `${ev.kind} by ${ev.host}. ${ev.online ? 'Online' : ev.city}`,
+      status: 'Going',
+      link: '/events',
+    })
+  }
+
   events.sort((x, y) => x.at.getTime() - y.at.getTime())
   const now = Date.now()
   const soon = events.filter((e) => e.at.getTime() >= now - 3600000)
@@ -90,7 +104,7 @@ export default function Calendar() {
 
   return (
     <>
-      <PanelHead title="Calendar" intro="Interviews and mentor sessions in one place, in your local time." />
+      <PanelHead title="Calendar" intro="Interviews, mentor sessions and events you registered for, in your local time." />
       {soon.length === 0 ? (
         <Empty title="Nothing coming up">Interviews you schedule or accept, and mentor sessions you book, show up here.</Empty>
       ) : (

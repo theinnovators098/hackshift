@@ -1,4 +1,4 @@
-import type { Challenge, Experience, Mentor, Opportunity, OpportunityKind, Person, Role, Scheme, Venture, WorkMode } from '../data/types'
+import type { Challenge, Experience, HackEvent, Mentor, Opportunity, OpportunityKind, Person, Role, Scheme, Venture, WorkMode } from '../data/types'
 
 export type AccountKind = 'seeker' | 'startup' | 'mentor' | 'recruiter' | 'admin'
 
@@ -249,6 +249,7 @@ export interface Data {
   tasks: MillisaTask[]
   usage: UsageEntry[]
   reports: Report[]
+  events: HackEvent[]
   settings: Settings
 }
 

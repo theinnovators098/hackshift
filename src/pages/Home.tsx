@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { Clock, IndianRupee } from 'lucide-react'
 import ShiftBoard from '../components/ShiftBoard'
 import { stageHelp, stages } from '../data/ventures'
+import EventBanner from '../components/EventBanner'
 import { useStore } from '../store/AppStore'
 import styles from './Home.module.css'
 
@@ -69,6 +70,7 @@ export default function Home() {
 
   return (
     <>
+      <EventBanner />
       <section className={`wrap ${styles.hero}`}>
         <div className={styles.heroText}>
           <h1 className={styles.headline}>

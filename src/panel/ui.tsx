@@ -71,6 +71,7 @@ export function Empty({ title, children, action }: { title: string; children?: R
 const tones: Record<string, string> = {
   live: 'tag-leaf',
   Accepted: 'tag-leaf',
+  Going: 'tag-leaf',
   Hired: 'tag-leaf',
   'Under review': 'tag-marigold',
   Proposed: 'tag-marigold',
