@@ -29,7 +29,9 @@ function minutesAgo(n: number) {
 
 const emptyLists = () => ({ saved: [], interested: [], reviewRequests: [] })
 
-function personAccount(personId: string, email: string, joined: number): Account {
+type SeedAccount = Omit<Account, 'kinds'>
+
+function personAccount(personId: string, email: string, joined: number): SeedAccount {
   const p = people.find((x) => x.id === personId)!
   return {
     id: `acc-${personId}`,
@@ -46,7 +48,7 @@ function personAccount(personId: string, email: string, joined: number): Account
 }
 
 export function seed(): Data {
-  const accounts: Account[] = [
+  const raw: SeedAccount[] = [
     {
       id: 'acc-admin',
       kind: 'admin',
@@ -78,6 +80,7 @@ export function seed(): Data {
       status: 'active',
       joinedOn: dateLabel(30),
       company: 'Tapri Pay',
+      verified: true,
       companyAbout:
         'Tapri Pay lets chai stalls and small kirana shops accept UPI and keep a simple khata. We have 40,000 shops on the app and a team of eleven.',
       website: 'https://tapripay.in',
@@ -93,6 +96,7 @@ export function seed(): Data {
       status: 'active',
       joinedOn: dateLabel(60),
       mentorId: 'meera-iyer',
+      verified: true,
       profile: { name: 'Meera Iyer', city: 'Bengaluru', college: 'a payments company', roles: ['mentor'], skills: ['Product'], goal: '' },
       lists: emptyLists(),
     },
@@ -105,6 +109,9 @@ export function seed(): Data {
       status: 'active',
       joinedOn: dateLabel(20),
       company: 'Pinwheel Logistics',
+      verified: true,
+      companyAbout:
+        'Pinwheel moves textile shipments for 900+ traders in Surat. We are replacing phone calls and paper challans with one tracking system.',
       profile: { name: 'Neha Kapoor', city: 'Surat', college: 'Pinwheel Logistics', roles: ['recruiter'], skills: [], goal: '' },
       lists: emptyLists(),
     },
@@ -123,13 +130,16 @@ export function seed(): Data {
       status: 'active',
       joinedOn: dateLabel(1),
       mentorId: 'rohit-bansal',
+      verifyRequested: true,
       profile: { name: 'Rohit Bansal', city: 'Chandigarh', college: 'a D2C apparel brand', roles: ['mentor'], skills: [], goal: '' },
       lists: emptyLists(),
     },
   ]
 
+  const accounts: Account[] = raw.map((a) => ({ ...a, kinds: [a.kind] }))
+
   return {
-    version: 2,
+    version: 3,
     session: null,
     accounts,
     opportunities: [
@@ -311,6 +321,66 @@ export function seed(): Data {
       { id: 'log-3', at: minutesAgo(140), actorId: 'acc-tanvi-desai', text: 'Tanvi Desai posted the idea "Chai Ledger" for review' },
       { id: 'log-4', at: minutesAgo(300), actorId: 'acc-vikram-joshi', text: 'Vikram Joshi applied to Frontend intern at Tapri Pay' },
       { id: 'log-5', at: minutesAgo(1440), actorId: 'acc-priya-nair', text: 'Priya Nair booked a session with Meera Iyer' },
+    ],
+    notices: [
+      {
+        id: 'n-1',
+        accountId: 'acc-riya-sharma',
+        at: minutesAgo(90),
+        text: 'Welcome to HackShift. Finish one challenge this week to get noticed by startups.',
+        link: '/challenges',
+        read: false,
+      },
+      {
+        id: 'n-2',
+        accountId: 'acc-tapri',
+        at: minutesAgo(300),
+        text: 'Vikram Joshi applied to Frontend intern',
+        link: '/panel/applicants',
+        read: false,
+      },
+      {
+        id: 'n-3',
+        accountId: 'acc-meera',
+        at: minutesAgo(200),
+        text: 'Aman Verma asked you for a session',
+        link: '/panel/sessions',
+        read: false,
+      },
+      {
+        id: 'n-4',
+        accountId: 'acc-admin',
+        at: minutesAgo(35),
+        text: 'Rohit Bansal asked to be verified as a mentor',
+        link: '/admin/verification',
+        read: false,
+      },
+    ],
+    messages: [
+      {
+        id: 'm-1',
+        from: 'acc-admin',
+        to: 'acc-riya-sharma',
+        text: 'Hi Riya, welcome to HackShift. If you get stuck anywhere, reply here and the team will help.',
+        at: minutesAgo(95),
+        read: false,
+      },
+      {
+        id: 'm-2',
+        from: 'acc-neha',
+        to: 'acc-aman-verma',
+        text: 'Hi Aman, loved your late routes analysis. Can you do a second round with our ops head this week?',
+        at: minutesAgo(1500),
+        read: true,
+      },
+      {
+        id: 'm-3',
+        from: 'acc-aman-verma',
+        to: 'acc-neha',
+        text: 'Thank you. Any morning works for me.',
+        at: minutesAgo(1380),
+        read: false,
+      },
     ],
     settings: { reviewPosts: true },
   }

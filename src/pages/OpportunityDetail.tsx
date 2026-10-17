@@ -4,13 +4,15 @@ import { ArrowLeft, Bookmark, BookmarkCheck, CalendarClock, CheckCircle2, MapPin
 import { overlap } from '../lib/match'
 import DraftNote from '../millisa/DraftNote'
 import FitCheck from '../millisa/FitCheck'
+import Verified from '../components/Verified'
+import MessageButton from '../components/MessageButton'
 import { useStore } from '../store/AppStore'
 import NotFound from './NotFound'
 import styles from './Detail.module.css'
 
 export default function OpportunityDetail() {
   const { id } = useParams()
-  const { profile, saved, toggleSaved, applications, apply, submissions, data, visible, account } = useStore()
+  const { profile, saved, toggleSaved, applications, apply, submissions, data, visible, account, isVerified } = useStore()
   const [open, setOpen] = useState(false)
   const [note, setNote] = useState('')
 
@@ -46,6 +48,7 @@ export default function OpportunityDetail() {
       <header className={styles.head}>
         <p className={styles.kicker}>
           {o.kind} at {o.company}
+          {isVerified(o.ownerId) && <Verified label={`${o.company} is verified by HackShift`} />}
         </p>
         <h1>{o.title}</h1>
         <ul className={styles.facts}>
@@ -154,6 +157,7 @@ export default function OpportunityDetail() {
                 </Link>
               </>
             )}
+            {account && !ownRole && o.ownerId && <MessageButton to={o.ownerId} label={`Message ${o.company}`} small={false} />}
             <button className="btn btn-ghost" onClick={() => toggleSaved(o.id)} aria-pressed={isSaved}>
               {isSaved ? <BookmarkCheck size={18} /> : <Bookmark size={18} />}
               {isSaved ? 'Saved' : 'Save for later'}

@@ -8,6 +8,8 @@ import type {
   BookingStatus,
   ContentKind,
   Data,
+  Message,
+  Notice,
   PipelineEntry,
   Profile,
   Settings,
@@ -22,6 +24,8 @@ export type {
   Booking,
   BookingStatus,
   ContentKind,
+  Message,
+  Notice,
   PipelineEntry,
   PipelineStage,
   Profile,
@@ -29,7 +33,7 @@ export type {
   SubmissionStatus,
 } from './types'
 
-const STORAGE_KEY = 'hackshift:v2'
+const STORAGE_KEY = 'hackshift:v3'
 
 export const kindLabel: Record<AccountKind, string> = {
   seeker: 'Job seeker',
@@ -43,11 +47,17 @@ function load(): Data {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     const parsed = raw ? JSON.parse(raw) : null
-    if (parsed?.version === 2) return parsed
+    if (parsed?.version === 3) return normalize(parsed)
   } catch {
     return seed()
   }
   return seed()
+}
+
+function normalize(d: Data): Data {
+  const fresh = seed()
+  const filled = { ...fresh, ...d, settings: { ...fresh.settings, ...d.settings } }
+  return { ...filled, accounts: filled.accounts.map((a) => ({ ...a, kinds: a.kinds?.length ? a.kinds : [a.kind] })) }
 }
 
 export function today() {
@@ -67,6 +77,16 @@ const isLive = (x: { status?: Visibility }) => (x.status ?? 'live') === 'live'
 function withLog(d: Data, text: string): Data {
   const entry = { id: uid('log'), at: new Date().toISOString(), actorId: d.session ?? 'system', text }
   return { ...d, log: [entry, ...d.log].slice(0, 200) }
+}
+
+function notify(d: Data, accountId: string | undefined, text: string, link?: string): Data {
+  if (!accountId || accountId === d.session) return d
+  const notice: Notice = { id: uid('n'), accountId, at: new Date().toISOString(), text, link, read: false }
+  return { ...d, notices: [notice, ...d.notices].slice(0, 300) }
+}
+
+function mentorAccountId(d: Data, mentorId: string) {
+  return d.accounts.find((a) => a.mentorId === mentorId)?.id
 }
 
 function patchMe(d: Data, fn: (a: Account) => Account): Data {
@@ -173,6 +193,7 @@ function useAppState() {
         joinedOn: today(),
         profile,
         lists: { saved: [], interested: [], reviewRequests: [] },
+        kinds: [kind],
         company: kind === 'startup' || kind === 'recruiter' ? profile.college || profile.name : undefined,
         mentorId: kind === 'mentor' ? `mentor-${id}` : undefined,
       }
@@ -268,7 +289,8 @@ function useAppState() {
           const o = d.opportunities.find((x) => x.id === opportunityId)
           const others = d.applications.filter((a) => !(a.accountId === d.session && a.opportunityId === opportunityId))
           const app = { id: uid('app'), opportunityId, accountId: d.session!, note, appliedOn: today(), status: 'Sent' as const }
-          return withLog({ ...d, applications: [...others, app] }, `${nameOf(d)} applied to ${o?.title} at ${o?.company}`)
+          const next = notify({ ...d, applications: [...others, app] }, o?.ownerId, `${nameOf(d)} applied to ${o?.title}`, '/panel/applicants')
+          return withLog(next, `${nameOf(d)} applied to ${o?.title} at ${o?.company}`)
         }),
       withdrawApplication: (id: string) =>
         update((d) => ({ ...d, applications: d.applications.filter((a) => a.id !== id) })),
@@ -276,10 +298,14 @@ function useAppState() {
         update((d) => {
           const app = d.applications.find((a) => a.id === id)
           const who = app && d.accounts.find((a) => a.id === app.accountId)?.name
-          return withLog(
+          const o = app && d.opportunities.find((x) => x.id === app.opportunityId)
+          const next = notify(
             { ...d, applications: d.applications.map((a) => (a.id === id ? { ...a, status } : a)) },
-            `${nameOf(d)} moved ${who}'s application to ${status}`,
+            app?.accountId,
+            `${o?.company}: your application for ${o?.title} is now ${status.toLowerCase()}`,
+            '/panel/applications',
           )
+          return withLog(next, `${nameOf(d)} moved ${who}'s application to ${status}`)
         }),
 
       submit: (challengeId: string, link: string, note: string) =>
@@ -287,23 +313,29 @@ function useAppState() {
           const c = d.challenges.find((x) => x.id === challengeId)
           const others = d.submissions.filter((s) => !(s.accountId === d.session && s.challengeId === challengeId))
           const sub = { id: uid('sub'), challengeId, accountId: d.session!, link, note, submittedOn: today(), status: 'In review' as const }
-          return withLog({ ...d, submissions: [...others, sub] }, `${nameOf(d)} submitted work for "${c?.title}"`)
+          const next = notify({ ...d, submissions: [...others, sub] }, c?.ownerId, `${nameOf(d)} sent work for "${c?.title}"`, '/panel/submissions')
+          return withLog(next, `${nameOf(d)} submitted work for "${c?.title}"`)
         }),
       reviewSubmission: (id: string, status: SubmissionStatus, feedback: string) =>
         update((d) => {
           const sub = d.submissions.find((s) => s.id === id)
           const who = sub && d.accounts.find((a) => a.id === sub.accountId)?.name
-          return withLog(
+          const c = sub && d.challenges.find((x) => x.id === sub.challengeId)
+          const next = notify(
             { ...d, submissions: d.submissions.map((s) => (s.id === id ? { ...s, status, feedback } : s)) },
-            `${nameOf(d)} marked ${who}'s submission as ${status.toLowerCase()}`,
+            sub?.accountId,
+            status === 'Accepted' ? `${c?.company} accepted your work on "${c?.title}". It is now a badge on your profile.` : `${c?.company} reviewed your work on "${c?.title}"`,
+            '/panel/challenges',
           )
+          return withLog(next, `${nameOf(d)} marked ${who}'s submission as ${status.toLowerCase()}`)
         }),
 
       book: (b: { mentorId: string; day: string; time: string; topic: string }) =>
         update((d) => {
           const m = d.mentors.find((x) => x.id === b.mentorId)
           const booking = { ...b, id: uid('book'), accountId: d.session!, status: 'Requested' as const }
-          return withLog({ ...d, bookings: [...d.bookings, booking] }, `${nameOf(d)} asked ${m?.name} for a session`)
+          const next = notify({ ...d, bookings: [...d.bookings, booking] }, mentorAccountId(d, b.mentorId), `${nameOf(d)} asked you for a session on ${b.day}, ${b.time}`, '/panel/sessions')
+          return withLog(next, `${nameOf(d)} asked ${m?.name} for a session`)
         }),
       cancelBooking: (id: string) => update((d) => ({ ...d, bookings: d.bookings.filter((b) => b.id !== id) })),
       setBookingStatus: (id: string, status: BookingStatus, mentorNote?: string) =>
@@ -312,14 +344,24 @@ function useAppState() {
           const who = b && d.accounts.find((a) => a.id === b.accountId)?.name
           const mentors =
             status === 'Done' && b ? d.mentors.map((m) => (m.id === b.mentorId ? { ...m, sessions: m.sessions + 1 } : m)) : d.mentors
-          return withLog(
+          const m = b && d.mentors.find((x) => x.id === b.mentorId)
+          const words: Record<BookingStatus, string> = {
+            Requested: 'is waiting',
+            Confirmed: 'is confirmed',
+            Done: 'is marked done. Read their note',
+            Declined: 'cannot go ahead at that time',
+          }
+          const next = notify(
             {
               ...d,
               mentors,
               bookings: d.bookings.map((x) => (x.id === id ? { ...x, status, mentorNote: mentorNote ?? x.mentorNote } : x)),
             },
-            `${nameOf(d)} marked the session with ${who} as ${status.toLowerCase()}`,
+            b?.accountId,
+            `Your session with ${m?.name} on ${b?.day} ${words[status]}`,
+            '/panel/sessions',
           )
+          return withLog(next, `${nameOf(d)} marked the session with ${who} as ${status.toLowerCase()}`)
         }),
       saveMentor: (m: Mentor) =>
         update((d) => withLog({ ...d, mentors: d.mentors.map((x) => (x.id === m.id ? m : x)) }, `${nameOf(d)} updated the mentor profile of ${m.name}`)),
@@ -332,12 +374,14 @@ function useAppState() {
       saveChallenge: (c: Challenge) => saveContent('challenges', c, c.title),
       setContentStatus: (kind: ContentKind, id: string, status: Visibility) =>
         update((d) => {
-          const item = (d[kind] as { id: string; title?: string; name?: string }[]).find((x) => x.id === id)
+          const item = (d[kind] as { id: string; title?: string; name?: string; ownerId?: string }[]).find((x) => x.id === id)
           const verb = status === 'live' ? 'approved' : status === 'hidden' ? 'hid' : 'sent back for review'
-          return withLog(
-            { ...d, [kind]: (d[kind] as { id: string }[]).map((x) => (x.id === id ? { ...x, status } : x)) },
-            `${nameOf(d)} ${verb} "${item?.title ?? item?.name}"`,
-          )
+          const label = item?.title ?? item?.name
+          let next: Data = { ...d, [kind]: (d[kind] as { id: string }[]).map((x) => (x.id === id ? { ...x, status } : x)) }
+          const admin = d.accounts.find((a) => a.id === d.session)?.kind === 'admin'
+          if (admin && status === 'live') next = notify(next, item?.ownerId, `"${label}" is approved and live on HackShift`, '/panel')
+          if (admin && status === 'hidden') next = notify(next, item?.ownerId, `"${label}" was not approved. Write to the HackShift team to know why.`, '/panel')
+          return withLog(next, `${nameOf(d)} ${verb} "${label}"`)
         }),
       deleteContent: (kind: ContentKind, id: string) =>
         update((d) => {
@@ -366,6 +410,96 @@ function useAppState() {
         update((d) => ({ ...d, pipeline: d.pipeline.map((p) => (p.id === id ? { ...p, ...patch, updatedOn: today() } : p)) })),
       removePipeline: (id: string) => update((d) => ({ ...d, pipeline: d.pipeline.filter((p) => p.id !== id) })),
 
+      notices: data.notices.filter((n) => n.accountId === myId),
+      markNoticesRead: () =>
+        update((d) => ({ ...d, notices: d.notices.map((n) => (n.accountId === d.session ? { ...n, read: true } : n)) })),
+      openNotice: (id: string) => update((d) => ({ ...d, notices: d.notices.map((n) => (n.id === id ? { ...n, read: true } : n)) })),
+
+      threads: Object.values(
+        data.messages
+          .filter((m) => m.from === myId || m.to === myId)
+          .reduce<Record<string, { otherId: string; last: Message; unread: number }>>((acc, m) => {
+            const otherId = m.from === myId ? m.to : m.from
+            const prev = acc[otherId]
+            acc[otherId] = {
+              otherId,
+              last: !prev || m.at > prev.last.at ? m : prev.last,
+              unread: (prev?.unread ?? 0) + (m.to === myId && !m.read ? 1 : 0),
+            }
+            return acc
+          }, {}),
+      ).sort((a, b) => (a.last.at < b.last.at ? 1 : -1)),
+      conversation: (otherId: string) =>
+        data.messages
+          .filter((m) => (m.from === myId && m.to === otherId) || (m.from === otherId && m.to === myId))
+          .sort((a, b) => (a.at < b.at ? -1 : 1)),
+      sendMessage: (to: string, text: string) =>
+        update((d) => {
+          const msg: Message = { id: uid('m'), from: d.session!, to, text, at: new Date().toISOString(), read: false }
+          return notify({ ...d, messages: [...d.messages, msg] }, to, `New message from ${nameOf(d)}`, `/panel/messages/${d.session}`)
+        }),
+      markThreadRead: (otherId: string) =>
+        update((d) =>
+          d.messages.some((m) => m.from === otherId && m.to === d.session && !m.read)
+            ? { ...d, messages: d.messages.map((m) => (m.from === otherId && m.to === d.session ? { ...m, read: true } : m)) }
+            : d,
+        ),
+
+      switchRole: (kind: AccountKind) => update((d) => patchMe(d, (a) => (a.kinds.includes(kind) ? { ...a, kind } : a))),
+      addRole: (kind: Exclude<AccountKind, 'admin'>, company?: string) =>
+        update((d) => {
+          const me = d.accounts.find((a) => a.id === d.session)
+          if (!me || me.kinds.includes(kind)) return d
+          let next = patchMe(d, (a) => ({
+            ...a,
+            kinds: [...a.kinds, kind],
+            kind,
+            company: company?.trim() || a.company,
+            mentorId: kind === 'mentor' ? a.mentorId ?? `mentor-${a.id}` : a.mentorId,
+            profile: { ...a.profile, roles: Array.from(new Set([...a.profile.roles, kind === 'seeker' ? 'seeker' : kind])) },
+          }))
+          if (kind === 'mentor' && !d.mentors.some((m) => m.ownerId === me.id)) {
+            const mentor: Mentor = {
+              id: me.mentorId ?? `mentor-${me.id}`,
+              name: me.name,
+              title: 'Mentor',
+              company: me.profile.college || 'Independent',
+              city: me.profile.city,
+              expertise: me.profile.skills.slice(0, 4),
+              languages: ['English', 'Hindi'],
+              bio: me.profile.goal,
+              sessions: 0,
+              yearsExp: 0,
+              status: newStatus(d),
+              ownerId: me.id,
+            }
+            next = { ...next, mentors: [...next.mentors, mentor] }
+          }
+          return withLog(next, `${me.name} added the ${kindLabel[kind].toLowerCase()} role`)
+        }),
+
+      requestVerification: () =>
+        update((d) => {
+          const me = d.accounts.find((a) => a.id === d.session)
+          let next = patchMe(d, (a) => ({ ...a, verifyRequested: true }))
+          for (const admin of d.accounts.filter((a) => a.kind === 'admin' || a.kinds.includes('admin'))) {
+            next = notify(next, admin.id, `${me?.company && me.kind !== 'mentor' ? me.company : me?.name} asked to be verified`, '/admin/verification')
+          }
+          return withLog(next, `${me?.name} asked to be verified`)
+        }),
+      setVerified: (id: string, verified: boolean) =>
+        update((d) => {
+          const acc = d.accounts.find((a) => a.id === id)
+          const next = notify(
+            { ...d, accounts: d.accounts.map((a) => (a.id === id ? { ...a, verified, verifyRequested: false } : a)) },
+            id,
+            verified ? 'Your account is verified. People now see a verified badge next to your name.' : 'Your verification request was not approved this time.',
+            '/panel/account',
+          )
+          return withLog(next, `${nameOf(d)} ${verified ? 'verified' : 'declined verification for'} ${acc?.name}`)
+        }),
+      isVerified: (ownerId?: string) => !!ownerId && !!data.accounts.find((a) => a.id === ownerId)?.verified,
+
       setAccountStatus: (id: string, status: Account['status']) =>
         update((d) => {
           const acc = d.accounts.find((a) => a.id === id)
@@ -388,6 +522,8 @@ function useAppState() {
               ventures: d.ventures.filter((v) => v.ownerId !== id),
               mentors: d.mentors.filter((m) => m.ownerId !== id),
               people: d.people.filter((p) => p.id !== acc?.personId),
+              notices: d.notices.filter((n) => n.accountId !== id),
+              messages: d.messages.filter((m) => m.from !== id && m.to !== id),
             },
             `${nameOf(d)} deleted ${acc?.name}'s account`,
           )

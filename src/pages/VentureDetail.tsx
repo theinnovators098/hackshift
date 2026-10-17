@@ -1,6 +1,7 @@
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, Check, ExternalLink, MapPin, Tag, Users } from 'lucide-react'
 import { stages } from '../data/ventures'
+import MessageButton from '../components/MessageButton'
 import { useStore } from '../store/AppStore'
 import NotFound from './NotFound'
 import styles from './Detail.module.css'
@@ -132,6 +133,7 @@ export default function VentureDetail() {
                     Create your profile first
                   </Link>
                 )}
+                {profile && v.ownerId && <MessageButton to={v.ownerId} label={`Message ${v.founder.split(' ')[0]}`} small={false} />}
               </>
             )}
           </div>

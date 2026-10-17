@@ -185,3 +185,11 @@
     grid-template-columns: 1fr;
   }
 }
+
+.foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+}

@@ -1,8 +1,10 @@
 import { useState } from 'react'
 import { Link, Navigate, Route, Routes } from 'react-router-dom'
 import { BadgeCheck, KanbanSquare, LayoutDashboard, Search, UserCog } from 'lucide-react'
+import MessageButton from '../components/MessageButton'
 import { useStore, type PipelineEntry, type PipelineStage } from '../store/AppStore'
 import AccountSettings from './AccountSettings'
+import { sharedRoutes, useSharedNav } from './shared'
 import PanelShell from './PanelShell'
 import { Empty, PanelHead, Section, Stats, panelStyles as styles } from './ui'
 import own from './RecruiterPanel.module.css'
@@ -75,7 +77,7 @@ function Overview() {
 }
 
 function Card({ entry }: { entry: PipelineEntry }) {
-  const { personById, updatePipeline, removePipeline } = useStore()
+  const { personById, updatePipeline, removePipeline, accountOfPerson } = useStore()
   const [editing, setEditing] = useState(false)
   const [note, setNote] = useState(entry.note)
   const [when, setWhen] = useState(entry.interviewOn ?? '')
@@ -133,6 +135,7 @@ function Card({ entry }: { entry: PipelineEntry }) {
             <button type="button" className={styles.link} onClick={() => setEditing(true)}>
               {entry.note ? 'Edit note' : 'Add note'}
             </button>
+            <MessageButton to={accountOfPerson(entry.personId)?.id} label="Message" plain />
             <button type="button" className={`${styles.link} ${styles.danger} ${styles.push}`} onClick={() => removePipeline(entry.id)}>
               Remove
             </button>
@@ -181,9 +184,11 @@ function Pipeline() {
 
 export default function RecruiterPanel() {
   const { entries } = usePipeline()
+  const shared = useSharedNav('/panel')
   const nav = [
     { to: '/panel', label: 'Overview', icon: LayoutDashboard, end: true },
     { to: '/panel/pipeline', label: 'Pipeline', icon: KanbanSquare, count: entries.filter((e) => e.stage === 'Interview').length },
+    ...shared,
     { to: '/panel/account', label: 'Account', icon: UserCog },
   ]
   return (
@@ -191,6 +196,7 @@ export default function RecruiterPanel() {
       <Routes>
         <Route index element={<Overview />} />
         <Route path="pipeline" element={<Pipeline />} />
+        {sharedRoutes()}
         <Route path="account" element={<AccountSettings />} />
         <Route path="*" element={<Navigate to="/panel" replace />} />
       </Routes>

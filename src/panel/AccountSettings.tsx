@@ -1,10 +1,14 @@
 import { useState, type FormEvent } from 'react'
-import { Link } from 'react-router-dom'
-import { kindLabel, useStore } from '../store/AppStore'
+import { Link, useNavigate } from 'react-router-dom'
+import Verified from '../components/Verified'
+import { kindLabel, panelPath, useStore, type AccountKind } from '../store/AppStore'
 import { PanelHead, Section, panelStyles as styles } from './ui'
 
 export default function AccountSettings() {
-  const { account, data, updateAccount } = useStore()
+  const { account, data, updateAccount, addRole, requestVerification } = useStore()
+  const navigate = useNavigate()
+  const [newRole, setNewRole] = useState<Exclude<AccountKind, 'admin'> | ''>('')
+  const [company, setCompany] = useState('')
   const [email, setEmail] = useState(account?.email ?? '')
   const [current, setCurrent] = useState('')
   const [next, setNext] = useState('')
@@ -43,6 +47,21 @@ export default function AccountSettings() {
     setMessage({ ok: true, text: 'Password changed.' })
   }
 
+  const missing = (['seeker', 'startup', 'mentor', 'recruiter'] as const).filter((k) => !account.kinds.includes(k))
+  const needsCompany = newRole === 'startup' || newRole === 'recruiter'
+  const verifiable = account.kind === 'startup' || account.kind === 'recruiter' || account.kind === 'mentor'
+
+  const add = (e: FormEvent) => {
+    e.preventDefault()
+    if (!newRole) return
+    if (needsCompany && !company.trim() && !account.company) {
+      setMessage({ ok: false, text: 'Add the company name for this role.' })
+      return
+    }
+    addRole(newRole, company)
+    navigate(panelPath(newRole))
+  }
+
   return (
     <>
       <PanelHead
@@ -63,6 +82,70 @@ export default function AccountSettings() {
       )}
 
       <div className={styles.two}>
+        {account.kind !== 'admin' && (
+          <Section title="Your roles">
+            <div className={styles.form}>
+              <p className={styles.cardBody}>
+                You are signed up as {account.kinds.map((k) => kindLabel[k].toLowerCase()).join(', ')}. One account can hold more than one
+                role, for example a student who also runs a startup.
+              </p>
+              {missing.length > 0 && (
+                <form onSubmit={add} className={styles.inlineForm}>
+                  <label className="field">
+                    <span>Add a role</span>
+                    <select className="input" value={newRole} onChange={(e) => setNewRole(e.target.value as typeof newRole)}>
+                      <option value="">Pick one</option>
+                      {missing.map((k) => (
+                        <option key={k} value={k}>
+                          {kindLabel[k]}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                  {needsCompany && !account.company && (
+                    <label className="field">
+                      <span>Company name</span>
+                      <input className="input" value={company} onChange={(e) => setCompany(e.target.value)} />
+                    </label>
+                  )}
+                  {newRole === 'mentor' && <small className={styles.cardSub}>Your mentor profile is reviewed by the HackShift team before people can book you.</small>}
+                  <div className={styles.formActions}>
+                    <button type="submit" className="btn btn-primary btn-sm" disabled={!newRole}>
+                      Add role
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          </Section>
+        )}
+
+        {verifiable && (
+          <Section title="Verification">
+            <div className={styles.form}>
+              {account.verified ? (
+                <p className={styles.cardBody}>
+                  Verified <Verified /> People see a verified badge next to {account.kind === 'mentor' ? 'your name' : 'your company'}.
+                </p>
+              ) : account.verifyRequested ? (
+                <p className={styles.cardBody}>Your request is with the HackShift team. Most are checked within two working days.</p>
+              ) : (
+                <>
+                  <p className={styles.cardBody}>
+                    A verified badge tells people the HackShift team has checked {account.kind === 'mentor' ? 'who you are' : 'that your company is real'},
+                    so they can trust you before they {account.kind === 'mentor' ? 'book a session' : 'apply'}.
+                  </p>
+                  <div className={styles.formActions}>
+                    <button type="button" className="btn btn-primary btn-sm" onClick={requestVerification}>
+                      Ask to be verified
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </Section>
+        )}
+
         <Section title="Sign-in email">
           <form className={styles.form} onSubmit={saveEmail} noValidate>
             <label className="field">

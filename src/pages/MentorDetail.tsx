@@ -1,6 +1,8 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { ArrowLeft, Briefcase, CalendarCheck, Languages, MapPin } from 'lucide-react'
+import Verified from '../components/Verified'
+import MessageButton from '../components/MessageButton'
 import { useStore } from '../store/AppStore'
 import NotFound from './NotFound'
 import styles from './Detail.module.css'
@@ -26,7 +28,7 @@ function upcomingDays(count: number, weekdaySlots: string[], saturdaySlots: stri
 
 export default function MentorDetail() {
   const { id } = useParams()
-  const { profile, bookings, book, cancelBooking, data, visible, account } = useStore()
+  const { profile, bookings, book, cancelBooking, data, visible, account, isVerified } = useStore()
   const m = data.mentors.find((x) => x.id === id && visible(x))
   const weekday = m?.weekdaySlots ?? defaultWeekdaySlots
   const saturday = m?.saturdaySlots ?? defaultSaturdaySlots
@@ -75,7 +77,10 @@ export default function MentorDetail() {
             .join('')}
         </span>
         <div>
-          <h1>{m.name}</h1>
+          <h1>
+            {m.name}
+            {isVerified(m.ownerId) && <Verified />}
+          </h1>
           <ul className={styles.facts}>
             <li>
               <Briefcase size={16} aria-hidden="true" /> {m.title} at {m.company}
@@ -202,6 +207,13 @@ export default function MentorDetail() {
               </form>
             )}
           </div>
+
+          {account && !ownMentorPage && m.ownerId && (
+            <div className={styles.panel}>
+              <p className={styles.muted}>Have a quick question before you book?</p>
+              <MessageButton to={m.ownerId} label={`Message ${first}`} />
+            </div>
+          )}
 
           {mine.length > 0 && (
             <div className={styles.panel}>

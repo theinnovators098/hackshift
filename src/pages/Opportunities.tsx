@@ -4,13 +4,14 @@ import { Bookmark, BookmarkCheck, Search, Zap } from 'lucide-react'
 import PageHead from '../components/PageHead'
 import type { OpportunityKind } from '../data/types'
 import { overlap } from '../lib/match'
+import Verified from '../components/Verified'
 import { useStore } from '../store/AppStore'
 import styles from './Opportunities.module.css'
 
 const kinds: (OpportunityKind | 'All')[] = ['All', 'Internship', 'Job', 'Gig', 'Co-founder']
 
 export default function Opportunities() {
-  const { profile, saved, toggleSaved, opportunities } = useStore()
+  const { profile, saved, toggleSaved, opportunities, isVerified } = useStore()
   const [kind, setKind] = useState<OpportunityKind | 'All'>('All')
   const [query, setQuery] = useState('')
   const [city, setCity] = useState('')
@@ -112,7 +113,8 @@ export default function Opportunities() {
                   </span>
                   <div className={styles.body}>
                     <p className={styles.company}>
-                      {o.company}, {o.city}
+                      {o.company}
+                      {isVerified(o.ownerId) && <Verified />}, {o.city}
                       {o.remote && <span className="tag">Remote ok</span>}
                     </p>
                     <h2 className={styles.title}>

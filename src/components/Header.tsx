@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import { Menu, X } from 'lucide-react'
+import { Menu, Search, X } from 'lucide-react'
+import NoticeBell from './NoticeBell'
+import SearchDialog from './SearchDialog'
 import { panelPath, useStore } from '../store/AppStore'
 import styles from './Header.module.css'
 
@@ -17,9 +19,21 @@ export default function Header() {
   const { account } = useStore()
   const home = account ? panelPath(account.kind) : '/start'
   const [open, setOpen] = useState(false)
+  const [searching, setSearching] = useState(false)
   const { pathname } = useLocation()
 
   useEffect(() => setOpen(false), [pathname])
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault()
+        setSearching(true)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   return (
     <header className={styles.header}>
@@ -56,6 +70,12 @@ export default function Header() {
         </nav>
 
         <div className={styles.right}>
+          <button type="button" className={styles.search} onClick={() => setSearching(true)} aria-label="Search HackShift">
+            <Search size={18} aria-hidden="true" />
+            <span className={styles.searchText}>Search</span>
+            <kbd className={styles.kbd}>Ctrl K</kbd>
+          </button>
+          <NoticeBell />
           {account ? (
             <Link to={home} className={styles.me} aria-label={`Open ${account.kind === 'admin' ? 'admin panel' : 'my panel'}`}>
               <span className={`${styles.avatar} ${account.kind === 'admin' ? styles.adminAvatar : ''}`} aria-hidden="true">
@@ -83,6 +103,7 @@ export default function Header() {
           </button>
         </div>
       </div>
+      {searching && <SearchDialog onClose={() => setSearching(false)} />}
     </header>
   )
 }

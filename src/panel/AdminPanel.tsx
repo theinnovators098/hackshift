@@ -1,12 +1,15 @@
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate, Route, Routes, useNavigate, useParams } from 'react-router-dom'
-import { ArrowLeft, FileStack, History, Inbox, Landmark, LayoutDashboard, Settings as SettingsIcon, UserCog, Users } from 'lucide-react'
+import { ArrowLeft, BadgeCheck, FileStack, History, Inbox, Landmark, LayoutDashboard, Settings as SettingsIcon, UserCog, Users } from 'lucide-react'
 import { stages } from '../data/ventures'
 import type { FounderGroup, Scheme, SchemeNeed, Stage, Visibility } from '../data/types'
+import MessageButton from '../components/MessageButton'
+import Verified from '../components/Verified'
 import { useMillisa } from '../millisa/MillisaProvider'
 import { kindLabel, panelPath, useStore, type AccountKind, type ContentKind } from '../store/AppStore'
 import AccountSettings from './AccountSettings'
 import { ChallengeEditor, RoleEditor } from './Editors'
+import { sharedRoutes, useSharedNav } from './shared'
 import PanelShell, { rememberAdmin } from './PanelShell'
 import { Empty, PanelHead, Section, Stats, Status, slug, timeAgo, panelStyles as styles } from './ui'
 import own from './AdminPanel.module.css'
@@ -248,6 +251,7 @@ function Accounts() {
                       <span className={styles.cellSub}>This is you</span>
                     ) : (
                       <span className={styles.rowActions}>
+                        <MessageButton to={a.id} plain />
                         {a.kind !== 'admin' && a.status === 'active' && (
                           <button type="button" className={styles.link} onClick={() => viewAs(a.id, a.kind)}>
                             View as
@@ -273,6 +277,81 @@ function Accounts() {
         </table>
       </div>
       {shown.length === 0 && <Empty title="No accounts match">Try a different name or clear the filter.</Empty>}
+    </>
+  )
+}
+
+function Verification() {
+  const { data, setVerified } = useStore()
+  const waiting = data.accounts.filter((a) => a.verifyRequested && !a.verified)
+  const verified = data.accounts.filter((a) => a.verified)
+  const what = (kind: AccountKind) => (kind === 'mentor' ? 'Mentor' : kind === 'recruiter' ? 'Recruiter' : 'Company')
+  return (
+    <>
+      <PanelHead
+        title="Verification"
+        intro="Check that the company exists or the mentor is who they say, then give them the verified badge. Ask for proof by message if you need it."
+      />
+      <Section title={`Waiting (${waiting.length})`}>
+        {waiting.length === 0 ? (
+          <Empty title="No requests waiting" />
+        ) : (
+          <ul className={styles.list}>
+            {waiting.map((a) => (
+              <li key={a.id} className={styles.card}>
+                <div className={styles.cardHead}>
+                  <div>
+                    <p className={own.type}>{what(a.kind)}</p>
+                    <p className={styles.cardTitle}>{a.kind === 'mentor' ? a.name : a.company ?? a.name}</p>
+                    <p className={styles.cardSub}>
+                      {a.name}, {a.email}. {a.profile.city}. Joined {a.joinedOn}
+                    </p>
+                  </div>
+                </div>
+                {(a.companyAbout || a.website) && (
+                  <p className={styles.cardBody}>
+                    {a.companyAbout} {a.website && <a href={a.website} target="_blank" rel="noreferrer">{a.website}</a>}
+                  </p>
+                )}
+                <div className={styles.cardFoot}>
+                  <button type="button" className="btn btn-primary btn-sm" onClick={() => setVerified(a.id, true)}>
+                    Verify
+                  </button>
+                  <button type="button" className="btn btn-ghost btn-sm" onClick={() => setVerified(a.id, false)}>
+                    Decline
+                  </button>
+                  <MessageButton to={a.id} label="Ask for proof" />
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </Section>
+      <Section title={`Verified (${verified.length})`}>
+        <div className={styles.tableWrap}>
+          <table className={styles.table}>
+            <tbody>
+              {verified.map((a) => (
+                <tr key={a.id}>
+                  <td>
+                    <p className={styles.cellTitle}>
+                      {a.kind === 'mentor' ? a.name : a.company ?? a.name} <Verified />
+                    </p>
+                    <p className={styles.cellSub}>
+                      {what(a.kind)}. {a.email}
+                    </p>
+                  </td>
+                  <td className={styles.actions}>
+                    <button type="button" className={`${styles.link} ${styles.danger}`} onClick={() => setVerified(a.id, false)}>
+                      Remove badge
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Section>
     </>
   )
 }
@@ -689,14 +768,18 @@ function Settings() {
 export default function AdminPanel() {
   const rows = useRows()
   const pending = rows.filter((r) => r.status === 'pending').length
+  const verifyWaiting = useStore().data.accounts.filter((a) => a.verifyRequested && !a.verified).length
+  const shared = useSharedNav('/admin')
   const nav = [
     { to: '/admin', label: 'Overview', icon: LayoutDashboard, end: true },
     { to: '/admin/review', label: 'Review queue', icon: Inbox, count: pending },
     { to: '/admin/accounts', label: 'Accounts', icon: Users },
+    { to: '/admin/verification', label: 'Verification', icon: BadgeCheck, count: verifyWaiting },
     { to: '/admin/content', label: 'Content', icon: FileStack },
     { to: '/admin/schemes', label: 'Schemes', icon: Landmark },
     { to: '/admin/activity', label: 'Activity', icon: History },
     { to: '/admin/settings', label: 'Settings', icon: SettingsIcon },
+    ...shared,
     { to: '/admin/account', label: 'My account', icon: UserCog },
   ]
   return (
@@ -705,6 +788,7 @@ export default function AdminPanel() {
         <Route index element={<Overview />} />
         <Route path="review" element={<Review />} />
         <Route path="accounts" element={<Accounts />} />
+        <Route path="verification" element={<Verification />} />
         <Route path="content" element={<Content />} />
         <Route path="content/roles/:id" element={<RoleEditor backTo="/admin/content" />} />
         <Route path="content/challenges/:id" element={<ChallengeEditor backTo="/admin/content" />} />
@@ -713,6 +797,7 @@ export default function AdminPanel() {
         <Route path="schemes/:id" element={<SchemeEditor />} />
         <Route path="activity" element={<Activity />} />
         <Route path="settings" element={<Settings />} />
+        {sharedRoutes()}
         <Route path="account" element={<AccountSettings />} />
         <Route path="*" element={<Navigate to="/admin" replace />} />
       </Routes>

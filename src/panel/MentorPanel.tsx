@@ -4,6 +4,7 @@ import { CalendarClock, CalendarDays, LayoutDashboard, UserCog, UserRound } from
 import { defaultSaturdaySlots, defaultWeekdaySlots } from '../pages/MentorDetail'
 import { useStore, type Booking } from '../store/AppStore'
 import AccountSettings from './AccountSettings'
+import { sharedRoutes, useSharedNav } from './shared'
 import PanelShell from './PanelShell'
 import { commaList, Empty, PanelHead, Section, Stats, Status, panelStyles as styles } from './ui'
 
@@ -341,11 +342,13 @@ function MentorProfile() {
 
 export default function MentorPanel() {
   const { bookings, mentor } = useMentor()
+  const shared = useSharedNav('/panel')
   const nav = [
     { to: '/panel', label: 'Overview', icon: LayoutDashboard, end: true },
     { to: '/panel/sessions', label: 'Sessions', icon: CalendarDays, count: bookings.filter((b) => b.status === 'Requested').length },
     { to: '/panel/availability', label: 'Weekly times', icon: CalendarClock },
     { to: '/panel/profile', label: 'Mentor profile', icon: UserRound },
+    ...shared,
     { to: '/panel/account', label: 'Account', icon: UserCog },
   ]
   return (
@@ -355,6 +358,7 @@ export default function MentorPanel() {
         <Route path="sessions" element={<Sessions />} />
         <Route path="availability" element={<Availability />} />
         <Route path="profile" element={<MentorProfile />} />
+        {sharedRoutes()}
         <Route path="account" element={<AccountSettings />} />
         <Route path="*" element={<Navigate to="/panel" replace />} />
       </Routes>

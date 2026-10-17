@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { ExternalLink, LogOut, type LucideIcon } from 'lucide-react'
-import { kindLabel, useStore } from '../store/AppStore'
+import { kindLabel, panelPath, useStore, type AccountKind } from '../store/AppStore'
 import { initials } from './ui'
 import styles from './Panel.module.css'
 
@@ -40,7 +40,7 @@ function forgetAdmin() {
 }
 
 export default function PanelShell({ nav, children, publicLink }: { nav: NavItem[]; children: ReactNode; publicLink?: { to: string; label: string } }) {
-  const { account, signOut, signInAs, accountById } = useStore()
+  const { account, signOut, signInAs, accountById, switchRole } = useStore()
   const navigate = useNavigate()
   if (!account) return null
 
@@ -76,6 +76,26 @@ export default function PanelShell({ nav, children, publicLink }: { nav: NavItem
             </p>
           </div>
         </div>
+        {account.kinds.length > 1 && (
+          <label className={styles.switcher}>
+            <span>Working as</span>
+            <select
+              className={styles.select}
+              value={account.kind}
+              onChange={(e) => {
+                const kind = e.target.value as AccountKind
+                switchRole(kind)
+                navigate(panelPath(kind))
+              }}
+            >
+              {account.kinds.map((k) => (
+                <option key={k} value={k}>
+                  {kindLabel[k]}
+                </option>
+              ))}
+            </select>
+          </label>
+        )}
         <nav className={styles.nav} aria-label="Panel">
           {nav.map((item) => (
             <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => (isActive ? styles.on : undefined)}>

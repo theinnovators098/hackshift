@@ -93,6 +93,33 @@
   font-weight: 700;
 }
 
+.search {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 38px;
+  padding: 0 8px 0 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-control);
+  background: var(--surface);
+  color: var(--ink-3);
+  font-size: var(--t-sm);
+  cursor: pointer;
+}
+
+.search:hover {
+  border-color: var(--ink-3);
+  color: var(--ink);
+}
+
+.kbd {
+  padding: 1px 5px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: var(--t-xs);
+}
+
 .adminAvatar {
   background: var(--ink);
   color: var(--marigold);
@@ -131,12 +158,22 @@
 
   .startBtn,
   .signIn,
+  .searchText,
+  .kbd,
   .meName {
     display: none;
   }
 
   .me {
     padding: 4px;
+  }
+
+  .search {
+    width: 40px;
+    padding: 0;
+    justify-content: center;
+    border-color: transparent;
+    background: none;
   }
 
   .nav {

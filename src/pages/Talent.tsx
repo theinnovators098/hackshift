@@ -1,11 +1,13 @@
 import { useMemo, useState } from 'react'
 import { BadgeCheck, Search, Star } from 'lucide-react'
 import PageHead from '../components/PageHead'
+import MessageButton from '../components/MessageButton'
 import { useStore } from '../store/AppStore'
 import styles from './Talent.module.css'
 
 export default function Talent() {
-  const { shortlist, toggleShortlist, people } = useStore()
+  const { shortlist, toggleShortlist, people, account, accountOfPerson } = useStore()
+  const canMessage = !!account && ['startup', 'recruiter', 'admin'].includes(account.kind)
   const [query, setQuery] = useState('')
   const [city, setCity] = useState('')
   const [verifiedOnly, setVerifiedOnly] = useState(true)
@@ -132,9 +134,12 @@ export default function Talent() {
                   ) : (
                     <p className={styles.noBadge}>No accepted challenges yet</p>
                   )}
-                  <p className={p.available ? styles.open : styles.busy}>
-                    {p.available ? 'Open to offers' : 'Not looking right now'}
-                  </p>
+                  <div className={styles.foot}>
+                    <p className={p.available ? styles.open : styles.busy}>
+                      {p.available ? 'Open to offers' : 'Not looking right now'}
+                    </p>
+                    {canMessage && <MessageButton to={accountOfPerson(p.id)?.id} />}
+                  </div>
                 </li>
               )
             })}

@@ -1,10 +1,12 @@
 import { useState, type FormEvent } from 'react'
 import { Link, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import { Briefcase, Building2, ClipboardCheck, LayoutDashboard, UserCog, Users, Zap } from 'lucide-react'
+import MessageButton from '../components/MessageButton'
 import { overlap } from '../lib/match'
 import { useStore, type ApplicationStatus, type ContentKind } from '../store/AppStore'
 import AccountSettings from './AccountSettings'
 import { ChallengeEditor, RoleEditor } from './Editors'
+import { sharedRoutes, useSharedNav } from './shared'
 import PanelShell from './PanelShell'
 import { Empty, PanelHead, Section, Stats, Status, panelStyles as styles } from './ui'
 
@@ -259,11 +261,14 @@ function Applicants() {
                     {hits.length} of {r.skills.length} skills match.{' '}
                     {r.challengeId && (work ? `Linked challenge: ${work.status.toLowerCase()}.` : 'Has not done the linked challenge.')}
                   </span>
-                  {work && (
-                    <a href={work.link} target="_blank" rel="noreferrer" className={`${styles.link} ${styles.push}`}>
-                      See their challenge work
-                    </a>
-                  )}
+                  <span className={`${styles.rowActions} ${styles.push}`}>
+                    {work && (
+                      <a href={work.link} target="_blank" rel="noreferrer" className={styles.link}>
+                        See their challenge work
+                      </a>
+                    )}
+                    <MessageButton to={who.id} />
+                  </span>
                 </div>
               </li>
             )
@@ -396,6 +401,7 @@ function Company() {
 
 export default function StartupPanel() {
   const { applicants, submissions } = useCompany()
+  const shared = useSharedNav('/panel')
   const nav = [
     { to: '/panel', label: 'Overview', icon: LayoutDashboard, end: true },
     { to: '/panel/roles', label: 'Roles', icon: Briefcase },
@@ -403,6 +409,7 @@ export default function StartupPanel() {
     { to: '/panel/applicants', label: 'Applicants', icon: Users, count: applicants.filter((a) => a.status === 'Sent').length },
     { to: '/panel/submissions', label: 'Challenge work', icon: ClipboardCheck, count: submissions.filter((s) => s.status === 'In review').length },
     { to: '/panel/company', label: 'Company profile', icon: Building2 },
+    ...shared,
     { to: '/panel/account', label: 'Account', icon: UserCog },
   ]
   return (
@@ -418,6 +425,7 @@ export default function StartupPanel() {
         <Route path="applicants" element={<Applicants />} />
         <Route path="submissions" element={<Submissions />} />
         <Route path="company" element={<Company />} />
+        {sharedRoutes()}
         <Route path="account" element={<AccountSettings />} />
         <Route path="*" element={<Navigate to="/panel" replace />} />
       </Routes>

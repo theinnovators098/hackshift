@@ -2,11 +2,12 @@ import { useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Languages, MapPin } from 'lucide-react'
 import PageHead from '../components/PageHead'
+import Verified from '../components/Verified'
 import { useStore } from '../store/AppStore'
 import styles from './Mentors.module.css'
 
 export default function Mentors() {
-  const { mentors } = useStore()
+  const { mentors, isVerified } = useStore()
   const [topic, setTopic] = useState('')
   const [language, setLanguage] = useState('')
 
@@ -63,6 +64,7 @@ export default function Mentors() {
                 <div className={styles.body}>
                   <h2>
                     <Link to={`/mentors/${m.id}`}>{m.name}</Link>
+                    {isVerified(m.ownerId) && <Verified />}
                   </h2>
                   <p className={styles.role}>
                     {m.title} at {m.company}

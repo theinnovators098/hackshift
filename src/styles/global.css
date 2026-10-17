@@ -282,6 +282,26 @@ textarea.input {
   font-weight: 500;
 }
 
+.text-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  font-size: var(--t-sm);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--line);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.text-btn:hover {
+  text-decoration-color: var(--marigold);
+}
+
 .back-link {
   display: inline-flex;
   align-items: center;

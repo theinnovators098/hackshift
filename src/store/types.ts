@@ -26,6 +26,9 @@ export interface Account {
   website?: string
   mentorId?: string
   personId?: string
+  kinds: AccountKind[]
+  verified?: boolean
+  verifyRequested?: boolean
 }
 
 export type ApplicationStatus = 'Sent' | 'Shortlisted' | 'Interview' | 'Hired' | 'Not selected'
@@ -84,12 +87,30 @@ export interface LogEntry {
   text: string
 }
 
+export interface Notice {
+  id: string
+  accountId: string
+  at: string
+  text: string
+  link?: string
+  read: boolean
+}
+
+export interface Message {
+  id: string
+  from: string
+  to: string
+  text: string
+  at: string
+  read: boolean
+}
+
 export interface Settings {
   reviewPosts: boolean
 }
 
 export interface Data {
-  version: 2
+  version: 3
   session: string | null
   accounts: Account[]
   opportunities: Opportunity[]
@@ -103,6 +124,8 @@ export interface Data {
   bookings: Booking[]
   pipeline: PipelineEntry[]
   log: LogEntry[]
+  notices: Notice[]
+  messages: Message[]
   settings: Settings
 }
 

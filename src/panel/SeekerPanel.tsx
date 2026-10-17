@@ -3,6 +3,7 @@ import { Bookmark, CalendarDays, LayoutDashboard, Lightbulb, Send, UserCog, Zap 
 import Dashboard from '../pages/Dashboard'
 import { useStore, type ApplicationStatus } from '../store/AppStore'
 import AccountSettings from './AccountSettings'
+import { sharedRoutes, useSharedNav } from './shared'
 import PanelShell from './PanelShell'
 import { Empty, PanelHead, Status, panelStyles as styles } from './ui'
 
@@ -266,6 +267,7 @@ export default function SeekerPanel() {
   const founder = !!profile?.roles.includes('founder') || myVentures.length > 0
   const moving = applications.filter((a) => a.status === 'Shortlisted' || a.status === 'Interview').length
 
+  const shared = useSharedNav('/panel')
   const nav = [
     { to: '/panel', label: 'Overview', icon: LayoutDashboard, end: true },
     { to: '/panel/applications', label: 'Applications', icon: Send, count: moving },
@@ -273,6 +275,7 @@ export default function SeekerPanel() {
     { to: '/panel/sessions', label: 'Mentor sessions', icon: CalendarDays },
     { to: '/panel/saved', label: 'Saved', icon: Bookmark },
     ...(founder ? [{ to: '/panel/ventures', label: 'My ventures', icon: Lightbulb }] : []),
+    ...shared,
     { to: '/panel/account', label: 'Account', icon: UserCog },
   ]
 
@@ -285,6 +288,7 @@ export default function SeekerPanel() {
         <Route path="sessions" element={<Sessions />} />
         <Route path="saved" element={<Saved />} />
         <Route path="ventures" element={<MyVentures />} />
+        {sharedRoutes()}
         <Route path="account" element={<AccountSettings />} />
         <Route path="*" element={<Navigate to="/panel" replace />} />
       </Routes>
