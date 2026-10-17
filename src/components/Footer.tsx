@@ -25,7 +25,7 @@ export default function Footer() {
           <div>
             <p className={styles.head}>Hire</p>
             <Link to="/talent">Find talent</Link>
-            <Link to="/challenges">Post a challenge</Link>
+            <Link to="/start">Join as a recruiter</Link>
           </div>
         </nav>
       </div>
