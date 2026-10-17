@@ -1,0 +1,71 @@
+.card {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--r-control);
+  background: var(--surface);
+  font-size: var(--t-sm);
+}
+
+.waiting {
+  border-color: #f0c56a;
+  background: #fffaf0;
+}
+
+.head {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.head svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--ink-2);
+}
+
+.summary {
+  flex: 1;
+  font-weight: 600;
+}
+
+.status {
+  flex: none;
+  font-size: var(--t-xs);
+  font-weight: 700;
+  color: var(--ink-3);
+}
+
+.waiting .status {
+  color: var(--marigold-deep);
+}
+
+.done .status {
+  color: var(--leaf);
+}
+
+.declined .status,
+.failed .status {
+  color: var(--rose);
+}
+
+.detail {
+  margin: 0;
+  padding-left: 10px;
+  border-left: 2px solid var(--line);
+  color: var(--ink-2);
+  white-space: pre-wrap;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+}
+
+.compact .detail {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}

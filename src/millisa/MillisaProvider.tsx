@@ -1,5 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { errorText, forgetKey, getKey, MillisaError, type Lang } from '../lib/millisa'
+import { errorText, forgetKey, gateMillisa, getKey, MillisaError, watchMillisa, type Lang } from '../lib/millisa'
+import { useStore } from '../store/AppStore'
 import KeyDialog from './KeyDialog'
 
 const LANG_STORE = 'hackshift:millisa-lang'
@@ -32,6 +33,18 @@ export function MillisaProvider({ children }: { children: ReactNode }) {
   const [asking, setAsking] = useState(false)
   const [panelOpen, setPanelOpen] = useState(false)
   const waiting = useRef<((ok: boolean) => void) | null>(null)
+  const { recordUsage, usedToday, data, account } = useStore()
+  const live = useRef({ recordUsage, usedToday, limit: data.settings.millisaDailyLimit, admin: account?.kind === 'admin' })
+  live.current = { recordUsage, usedToday, limit: data.settings.millisaDailyLimit, admin: account?.kind === 'admin' }
+
+  useEffect(() => {
+    watchMillisa((e) => live.current.recordUsage(e))
+    gateMillisa(() => live.current.admin || live.current.usedToday < live.current.limit)
+    return () => {
+      watchMillisa(null)
+      gateMillisa(null)
+    }
+  }, [])
 
   const setLang = useCallback((next: Lang) => {
     setLangState(next)

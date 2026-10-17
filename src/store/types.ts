@@ -105,8 +105,31 @@ export interface Message {
   read: boolean
 }
 
+export type TaskStatus = 'waiting' | 'done' | 'declined' | 'failed'
+
+export interface MillisaTask {
+  id: string
+  accountId: string
+  at: string
+  tool: string
+  summary: string
+  args: Record<string, unknown>
+  status: TaskStatus
+  result?: string
+}
+
+export interface UsageEntry {
+  at: string
+  accountId: string
+  model: string
+  ok: boolean
+  ms: number
+  kind: string | null
+}
+
 export interface Settings {
   reviewPosts: boolean
+  millisaDailyLimit: number
 }
 
 export interface Data {
@@ -126,6 +149,8 @@ export interface Data {
   log: LogEntry[]
   notices: Notice[]
   messages: Message[]
+  tasks: MillisaTask[]
+  usage: UsageEntry[]
   settings: Settings
 }
 

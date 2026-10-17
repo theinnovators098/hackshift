@@ -7,7 +7,7 @@ export const SMART = 'gemini-flash-latest'
 
 export type Lang = 'en' | 'hi'
 
-export type ErrorKind = 'no-key' | 'bad-key' | 'busy' | 'offline' | 'blocked' | 'failed'
+export type ErrorKind = 'no-key' | 'bad-key' | 'busy' | 'offline' | 'blocked' | 'failed' | 'limit'
 
 const messages: Record<ErrorKind, string> = {
   'no-key': 'Connect Millisa to use this.',
@@ -16,6 +16,7 @@ const messages: Record<ErrorKind, string> = {
   offline: 'Millisa could not reach the internet. Check your connection and try again.',
   blocked: 'Millisa cannot answer that one. Try asking in a different way.',
   failed: 'Millisa could not finish that answer. Try again.',
+  limit: 'You have reached today’s Millisa limit on HackShift. It resets tomorrow morning.',
 }
 
 export class MillisaError extends Error {
@@ -85,6 +86,12 @@ export interface Turn {
   text: string
 }
 
+export interface ToolDecl {
+  name: string
+  description: string
+  parameters: object
+}
+
 interface Request {
   model?: string
   system: string
@@ -92,19 +99,22 @@ interface Request {
   schema?: object
   temperature?: number
   signal?: AbortSignal
+  tools?: ToolDecl[]
+  contents?: unknown[]
 }
 
 interface Part {
   text?: string
   thought?: boolean
+  functionCall?: { name: string; args?: Record<string, unknown>; id?: string }
 }
 
 interface Payload {
-  candidates?: { content?: { parts?: Part[] }; finishReason?: string }[]
+  candidates?: { content?: { role?: string; parts?: Part[] }; finishReason?: string }[]
   promptFeedback?: { blockReason?: string }
 }
 
-function body({ model = FAST, system, turns, schema, temperature }: Request) {
+function body({ model = FAST, system, turns, schema, temperature, tools, contents }: Request) {
   const generationConfig: Record<string, unknown> = {}
   if (temperature !== undefined) generationConfig.temperature = temperature
   if (model === SMART) generationConfig.thinkingConfig = { thinkingLevel: 'low' }
@@ -114,34 +124,66 @@ function body({ model = FAST, system, turns, schema, temperature }: Request) {
   }
   return {
     systemInstruction: { parts: [{ text: system }] },
-    contents: turns.map((t) => ({ role: t.role, parts: [{ text: t.text }] })),
+    contents: contents ?? turns.map((t) => ({ role: t.role, parts: [{ text: t.text }] })),
     generationConfig,
+    ...(tools?.length ? { tools: [{ functionDeclarations: tools }] } : {}),
   }
+}
+
+const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
+
+type Watcher = (event: { model: string; ok: boolean; ms: number; kind: ErrorKind | null }) => void
+let watcher: Watcher | null = null
+
+export function watchMillisa(fn: Watcher | null) {
+  watcher = fn
+}
+
+let gate: (() => boolean) | null = null
+
+export function gateMillisa(fn: (() => boolean) | null) {
+  gate = fn
 }
 
 async function send(req: Request, stream: boolean) {
   const key = getKey()
   if (!key) throw new MillisaError('no-key')
-  const model = req.model ?? FAST
-  const url = `${BASE}/${model}:${stream ? 'streamGenerateContent?alt=sse' : 'generateContent'}`
+  if (gate && !gate()) throw new MillisaError('limit')
+  const first = req.model ?? FAST
+  const attempts = first === SMART ? [SMART, FAST] : [first, first]
+  const started = Date.now()
 
-  let res: Response
-  try {
-    res = await fetch(url, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
-      body: JSON.stringify(body(req)),
-      signal: req.signal,
-    })
-  } catch (e) {
-    if (req.signal?.aborted) throw e
-    throw new MillisaError('offline')
+  for (let i = 0; i < attempts.length; i++) {
+    const model = attempts[i]
+    const url = `${BASE}/${model}:${stream ? 'streamGenerateContent?alt=sse' : 'generateContent'}`
+    let res: Response
+    try {
+      res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-goog-api-key': key },
+        body: JSON.stringify(body({ ...req, model })),
+        signal: req.signal,
+      })
+    } catch (e) {
+      if (req.signal?.aborted) throw e
+      watcher?.({ model, ok: false, ms: Date.now() - started, kind: 'offline' })
+      throw new MillisaError('offline')
+    }
+
+    if (res.ok) {
+      watcher?.({ model, ok: true, ms: Date.now() - started, kind: null })
+      return res
+    }
+    if ((res.status === 429 || res.status === 503) && i < attempts.length - 1) {
+      await pause(700)
+      continue
+    }
+    const detail = await res.text().catch(() => '')
+    const kind: ErrorKind =
+      res.status === 429 || res.status === 503 ? 'busy' : /api.?key|unauthenticated|permission/i.test(detail) ? 'bad-key' : 'failed'
+    watcher?.({ model, ok: false, ms: Date.now() - started, kind })
+    throw new MillisaError(kind)
   }
-
-  if (res.ok) return res
-  if (res.status === 429 || res.status === 503) throw new MillisaError('busy')
-  const detail = await res.text().catch(() => '')
-  if (/api.?key|unauthenticated|permission/i.test(detail)) throw new MillisaError('bad-key')
   throw new MillisaError('failed')
 }
 
@@ -160,6 +202,42 @@ export async function askText(req: Request) {
   const text = textOf(await res.json())
   if (!text.trim()) throw new MillisaError('failed')
   return text.trim()
+}
+
+export async function askWithTools(
+  req: Request & {
+    tools: ToolDecl[]
+    run: (name: string, args: Record<string, unknown>) => Promise<object> | object
+    onStep?: (name: string) => void
+  },
+) {
+  const contents: unknown[] = req.turns.map((t) => ({ role: t.role, parts: [{ text: t.text }] }))
+  for (let round = 0; round < 6; round++) {
+    const res = await send({ ...req, contents }, false)
+    const payload: Payload = await res.json()
+    const content = payload.candidates?.[0]?.content
+    const calls = (content?.parts ?? []).filter((p) => p.functionCall)
+    if (calls.length === 0) {
+      const text = textOf(payload).trim()
+      if (!text) throw new MillisaError('failed')
+      return text
+    }
+    contents.push(content)
+    const responses = []
+    for (const part of calls) {
+      const call = part.functionCall!
+      req.onStep?.(call.name)
+      let result: object
+      try {
+        result = await req.run(call.name, call.args ?? {})
+      } catch (e) {
+        result = { error: e instanceof Error ? e.message : 'The tool failed' }
+      }
+      responses.push({ functionResponse: { name: call.name, id: call.id, response: result } })
+    }
+    contents.push({ role: 'user', parts: responses })
+  }
+  throw new MillisaError('failed')
 }
 
 export async function* streamText(req: Request) {

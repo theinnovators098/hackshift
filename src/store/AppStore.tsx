@@ -9,10 +9,12 @@ import type {
   ContentKind,
   Data,
   Message,
+  MillisaTask,
   Notice,
   PipelineEntry,
   Profile,
   Settings,
+  UsageEntry,
   SubmissionStatus,
 } from './types'
 
@@ -25,6 +27,7 @@ export type {
   BookingStatus,
   ContentKind,
   Message,
+  MillisaTask,
   Notice,
   PipelineEntry,
   PipelineStage,
@@ -499,6 +502,17 @@ function useAppState() {
           return withLog(next, `${nameOf(d)} ${verified ? 'verified' : 'declined verification for'} ${acc?.name}`)
         }),
       isVerified: (ownerId?: string) => !!ownerId && !!data.accounts.find((a) => a.id === ownerId)?.verified,
+
+      tasks: data.tasks.filter((t) => t.accountId === myId),
+      addTask: (task: Omit<MillisaTask, 'accountId' | 'at'>) =>
+        update((d) => ({ ...d, tasks: [{ ...task, accountId: d.session ?? '', at: new Date().toISOString() }, ...d.tasks].slice(0, 400) })),
+      setTask: (id: string, patch: Partial<Pick<MillisaTask, 'status' | 'result'>>) =>
+        update((d) => ({ ...d, tasks: d.tasks.map((t) => (t.id === id ? { ...t, ...patch } : t)) })),
+      clearTaskHistory: () =>
+        update((d) => ({ ...d, tasks: d.tasks.filter((t) => t.accountId !== d.session || t.status === 'waiting') })),
+      recordUsage: (entry: Omit<UsageEntry, 'at' | 'accountId'>) =>
+        update((d) => ({ ...d, usage: [{ ...entry, at: new Date().toISOString(), accountId: d.session ?? 'guest' }, ...d.usage].slice(0, 1000) })),
+      usedToday: data.usage.filter((u) => u.accountId === (myId || 'guest') && u.at.slice(0, 10) === new Date().toISOString().slice(0, 10)).length,
 
       setAccountStatus: (id: string, status: Account['status']) =>
         update((d) => {

@@ -1,11 +1,15 @@
 import { useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from 'react'
 import { useLocation } from 'react-router-dom'
 import { ArrowUp, Square, Trash2, X } from 'lucide-react'
-import { errorText, FAST, MillisaError, streamText, type Turn } from '../lib/millisa'
+import { askWithTools, errorText, FAST, MillisaError, type Turn } from '../lib/millisa'
 import { chatSystem } from '../lib/millisaPrompts'
 import { useStore } from '../store/AppStore'
 import { useMillisa } from './MillisaProvider'
 import { LangToggle, MillisaMark, Problem, Reply, Thinking } from './parts'
+import TaskCard from './TaskCard'
+import { toolLabels, useMillisaTools } from './tools'
+
+type ChatItem = Turn & { taskIds?: string[] }
 import styles from './MillisaPanel.module.css'
 
 function suggestionsFor(roles: string[]) {
@@ -22,7 +26,9 @@ export default function MillisaPanel() {
   const { panelOpen, openPanel, closePanel, lang, ensureKey, keyRejected } = useMillisa()
   const { profile, myVentures, opportunities, challenges, mentors, ventures, schemes } = useStore()
   const { pathname } = useLocation()
-  const [turns, setTurns] = useState<Turn[]>([])
+  const [turns, setTurns] = useState<ChatItem[]>([])
+  const [step, setStep] = useState('')
+  const kit = useMillisaTools()
   const [draft, setDraft] = useState('')
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState('')
@@ -46,8 +52,8 @@ export default function MillisaPanel() {
     if (!question || busy) return
     if (!(await ensureKey())) return
 
-    const history: Turn[] = [...turns.filter((t) => t.text), { role: 'user', text: question }]
-    const recent = history.slice(-12)
+    const history: ChatItem[] = [...turns.filter((t) => t.text), { role: 'user', text: question }]
+    const recent: Turn[] = history.slice(-12).map((t) => ({ role: t.role, text: t.text }))
     while (recent[0]?.role === 'model') recent.shift()
 
     setTurns([...history, { role: 'model', text: '' }])
@@ -58,10 +64,10 @@ export default function MillisaPanel() {
     ctrl.current = c
 
     try {
-      let reply = ''
-      const stream = streamText({
+      const taskIds: string[] = []
+      const reply = await askWithTools({
         model: FAST,
-        system: chatSystem(
+        system: `${chatSystem(
           profile,
           {
             opportunities,
@@ -72,15 +78,19 @@ export default function MillisaPanel() {
           },
           pathname,
           lang,
-        ),
+        )}\n\nTOOLS\n${kit.rules}`,
         turns: recent,
-        temperature: 0.6,
+        temperature: 0.5,
         signal: c.signal,
+        tools: kit.tools,
+        onStep: (name) => setStep(toolLabels[name] ?? 'Working on it'),
+        run: (name, args) => {
+          const result = kit.run(name, args) as { taskId?: string }
+          if (result.taskId) taskIds.push(result.taskId)
+          return result
+        },
       })
-      for await (const chunk of stream) {
-        reply += chunk
-        setTurns([...history, { role: 'model', text: reply }])
-      }
+      if (!c.signal.aborted) setTurns([...history, { role: 'model', text: reply, taskIds }])
     } catch (e) {
       if (!c.signal.aborted) {
         if (e instanceof MillisaError && e.kind === 'bad-key') keyRejected()
@@ -89,6 +99,7 @@ export default function MillisaPanel() {
       setTurns((list) => list.filter((t, i) => !(i === list.length - 1 && t.role === 'model' && !t.text)))
     } finally {
       setBusy(false)
+      setStep('')
       ctrl.current = null
     }
   }
@@ -182,12 +193,15 @@ export default function MillisaPanel() {
                 t.text && (
                   <div key={i} className={styles.bot}>
                     <Reply text={t.text} onNavigate={closeOnSmallScreens} />
+                    {t.taskIds?.map((id) => (
+                      <TaskCard key={id} id={id} compact />
+                    ))}
                   </div>
                 )
               ),
             )
           )}
-          {waitingForFirstWord && <Thinking>Millisa is looking through HackShift</Thinking>}
+          {waitingForFirstWord && <Thinking>{step || 'Millisa is looking through HackShift'}</Thinking>}
           {error && <Problem message={error} onRetry={lastUser ? () => ask(lastUser.text) : undefined} />}
         </div>
 

@@ -382,6 +382,8 @@ export function seed(): Data {
         read: false,
       },
     ],
-    settings: { reviewPosts: true },
+    tasks: [],
+    usage: [],
+    settings: { reviewPosts: true, millisaDailyLimit: 80 },
   }
 }
