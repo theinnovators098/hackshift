@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react'
-import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { useEffect, useRef, type ReactNode } from 'react'
+import { Link, NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { ExternalLink, LogOut, type LucideIcon } from 'lucide-react'
 import { kindLabel, panelPath, useStore, type AccountKind } from '../store/AppStore'
 import { initials } from './ui'
@@ -42,6 +42,16 @@ function forgetAdmin() {
 export default function PanelShell({ nav, children, publicLink }: { nav: NavItem[]; children: ReactNode; publicLink?: { to: string; label: string } }) {
   const { account, signOut, signInAs, accountById, switchRole } = useStore()
   const navigate = useNavigate()
+  const { pathname } = useLocation()
+  const navRef = useRef<HTMLElement>(null)
+
+  useEffect(() => {
+    const active = navRef.current?.querySelector(`.${styles.on}`)
+    if (active && navRef.current && navRef.current.scrollWidth > navRef.current.clientWidth) {
+      active.scrollIntoView({ inline: 'center', block: 'nearest' })
+    }
+  }, [pathname])
+
   if (!account) return null
 
   const isAdmin = account.kind === 'admin'
@@ -96,7 +106,7 @@ export default function PanelShell({ nav, children, publicLink }: { nav: NavItem
             </select>
           </label>
         )}
-        <nav className={styles.nav} aria-label="Panel">
+        <nav ref={navRef} className={styles.nav} aria-label="Panel">
           {nav.map((item) => (
             <NavLink key={item.to} to={item.to} end={item.end} className={({ isActive }) => (isActive ? styles.on : undefined)}>
               <item.icon size={17} aria-hidden="true" />
