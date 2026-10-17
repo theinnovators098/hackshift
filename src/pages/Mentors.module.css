@@ -1,0 +1,143 @@
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.topics {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.lang {
+  position: relative;
+}
+
+.lang svg {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--ink-3);
+  pointer-events: none;
+}
+
+.lang select {
+  padding-left: 40px;
+  min-width: 190px;
+}
+
+.none {
+  padding: 40px 0;
+  color: var(--ink-2);
+}
+
+.list {
+  list-style: none;
+  margin: 28px 0 0;
+  padding: 0;
+  border-top: 2px solid var(--ink);
+}
+
+.item {
+  display: grid;
+  grid-template-columns: 72px 1fr 220px;
+  gap: 24px;
+  padding: 28px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--marigold-wash);
+  color: var(--marigold-deep);
+  font-weight: 800;
+  font-size: var(--t-xl);
+  font-variation-settings: 'wdth' 120;
+}
+
+.item:nth-child(even) .avatar {
+  background: var(--ink);
+  color: var(--marigold);
+}
+
+.body h2 {
+  font-size: var(--t-xl);
+  font-variation-settings: 'wdth' 108;
+}
+
+.body h2 a {
+  text-decoration: none;
+}
+
+.body h2 a:hover {
+  text-decoration: underline;
+  text-decoration-color: var(--marigold);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+
+.role {
+  color: var(--ink-2);
+  font-weight: 500;
+}
+
+.bio {
+  margin-top: 10px;
+  color: var(--ink-2);
+  max-width: 62ch;
+}
+
+.tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 14px;
+}
+
+.side {
+  display: grid;
+  gap: 6px;
+  align-content: start;
+  font-size: var(--t-sm);
+  color: var(--ink-2);
+}
+
+.side p {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.side strong {
+  color: var(--ink);
+}
+
+.side a {
+  margin-top: 8px;
+  justify-self: start;
+}
+
+@media (max-width: 820px) {
+  .item {
+    grid-template-columns: 52px 1fr;
+    gap: 16px;
+  }
+
+  .avatar {
+    width: 52px;
+    height: 52px;
+    font-size: var(--t-md);
+  }
+
+  .side {
+    grid-column: 2;
+  }
+}

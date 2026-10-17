@@ -56,9 +56,14 @@ export default function Dashboard() {
             ))}
           </p>
         </div>
-        <Link to="/start" className="btn btn-ghost btn-sm">
-          <Pencil size={14} /> Edit profile
-        </Link>
+        <div className={styles.headActions}>
+          <Link to="/profile" className="btn btn-ghost btn-sm">
+            View public profile
+          </Link>
+          <Link to="/start" className="btn btn-ghost btn-sm">
+            <Pencil size={14} /> Edit profile
+          </Link>
+        </div>
       </header>
 
       {profile.goal && (

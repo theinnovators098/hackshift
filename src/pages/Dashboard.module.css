@@ -30,6 +30,12 @@
   letter-spacing: -0.03em;
 }
 
+.headActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
 .meta {
   display: flex;
   flex-wrap: wrap;

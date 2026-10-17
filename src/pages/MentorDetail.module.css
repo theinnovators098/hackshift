@@ -1,0 +1,114 @@
+.head {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.avatar {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: var(--marigold);
+  color: var(--ink);
+  font-weight: 800;
+  font-size: var(--t-2xl);
+  font-variation-settings: 'wdth' 120;
+}
+
+.days {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.day {
+  display: grid;
+  justify-items: center;
+  gap: 0;
+  padding: 8px 0;
+  border: 1px solid var(--line);
+  border-radius: var(--r-control);
+  background: var(--surface);
+  font-size: var(--t-xs);
+  color: var(--ink-3);
+  cursor: pointer;
+}
+
+.day strong {
+  font-size: var(--t-lg);
+  color: var(--ink);
+}
+
+.day:hover {
+  border-color: var(--ink-3);
+}
+
+.day[aria-pressed='true'] {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: #c9cce0;
+}
+
+.day[aria-pressed='true'] strong {
+  color: #fff;
+}
+
+.slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.slots :global(.chip:disabled) {
+  opacity: 0.5;
+  cursor: not-allowed;
+  text-decoration: line-through;
+}
+
+.booked {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+
+.booked li {
+  display: flex;
+  gap: 10px;
+}
+
+.booked svg {
+  flex: none;
+  margin-top: 2px;
+  color: var(--leaf);
+}
+
+.cancel {
+  margin-top: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--rose);
+  font-size: var(--t-sm);
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+@media (max-width: 560px) {
+  .head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .avatar {
+    width: 72px;
+    height: 72px;
+    font-size: var(--t-xl);
+  }
+}

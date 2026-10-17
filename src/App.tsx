@@ -6,6 +6,9 @@ import Dashboard from './pages/Dashboard'
 import Opportunities from './pages/Opportunities'
 import OpportunityDetail from './pages/OpportunityDetail'
 import Talent from './pages/Talent'
+import Mentors from './pages/Mentors'
+import MentorDetail from './pages/MentorDetail'
+import Profile from './pages/Profile'
 import Ventures from './pages/Ventures'
 import VentureDetail from './pages/VentureDetail'
 import NewVenture from './pages/NewVenture'
@@ -29,6 +32,9 @@ export default function App() {
         <Route path="ventures/new" element={<NewVenture />} />
         <Route path="ventures/:id" element={<VentureDetail />} />
         <Route path="schemes" element={<Schemes />} />
+        <Route path="mentors" element={<Mentors />} />
+        <Route path="mentors/:id" element={<MentorDetail />} />
+        <Route path="profile" element={<Profile />} />
         <Route path="talent" element={<Talent />} />
         <Route path="*" element={<NotFound />} />
       </Route>
