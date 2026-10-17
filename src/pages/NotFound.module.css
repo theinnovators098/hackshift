@@ -1,0 +1,30 @@
+.page {
+  padding-block: 96px 40px;
+  max-width: 720px;
+}
+
+.code {
+  font-size: var(--t-5xl);
+  font-weight: 800;
+  font-variation-settings: 'wdth' 125;
+  color: var(--marigold);
+  line-height: 1;
+  margin-bottom: 16px;
+}
+
+.page h1 {
+  font-size: var(--t-3xl);
+  margin-bottom: 12px;
+}
+
+.page > p:not(.code) {
+  color: var(--ink-2);
+  font-size: var(--t-md);
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}

@@ -1,0 +1,117 @@
+import type { Challenge } from './types'
+
+export const challenges: Challenge[] = [
+  {
+    id: 'tapri-checkout',
+    title: 'Redesign the UPI payment confirmation screen',
+    company: 'Tapri Pay',
+    brief:
+      'Shopkeepers tell us they miss payments because the confirmation screen looks the same for ₹10 and ₹1,000. Many use the app with one hand while serving customers. Redesign the screen so a payment is impossible to miss.',
+    deliverables: [
+      'One mobile screen, built in React or plain HTML/CSS',
+      'A short note on what you changed and why',
+      'A link to your code (GitHub or CodeSandbox)',
+    ],
+    skills: ['React', 'CSS', 'UX'],
+    level: 'Beginner',
+    hours: 4,
+    reward: '₹3,000 + interview for the frontend internship',
+    closes: '29 Oct',
+    submissions: 38,
+    fastTrack: true,
+  },
+  {
+    id: 'ganit-mistakes',
+    title: 'Group student mistakes by the concept they missed',
+    company: 'Ganit Labs',
+    brief:
+      'We have 5,000 anonymised wrong answers on fractions from Class 6 students. Group them by the misconception behind each mistake, so teachers can fix the concept instead of the single question.',
+    deliverables: [
+      'A notebook (Colab or Jupyter) with your approach',
+      'The groups you found, with three example answers each',
+      'One paragraph a teacher could read and act on',
+    ],
+    skills: ['Python', 'Machine learning'],
+    level: 'Intermediate',
+    hours: 8,
+    reward: '₹6,000 + interview for the ML internship',
+    closes: '1 Nov',
+    submissions: 14,
+    fastTrack: true,
+  },
+  {
+    id: 'bunkar-tag',
+    title: 'Design the weaver story tag',
+    company: 'Bunkar Studio',
+    brief:
+      'Every saree ships with a small tag about the family that wove it. Today it is a plain printout. Design a tag that fits in the palm of a hand and makes the buyer want to keep it.',
+    deliverables: [
+      'Front and back of the tag (90 × 55 mm)',
+      'One version in English and one in Hindi',
+      'Print-ready PDF',
+    ],
+    skills: ['Figma', 'Branding'],
+    level: 'Beginner',
+    hours: 3,
+    reward: '₹2,500 + your tag goes into print',
+    closes: '26 Oct',
+    submissions: 52,
+    fastTrack: false,
+  },
+  {
+    id: 'pinwheel-late-routes',
+    title: 'Find out why the Ring Road route runs late',
+    company: 'Pinwheel Logistics',
+    brief:
+      'Deliveries on our Ring Road route are late 31% of the time, compared with 9% elsewhere. We will share three months of trip data. Tell us what is causing it and what we should change first.',
+    deliverables: [
+      'Your analysis in a spreadsheet or notebook',
+      'A one-page summary with your top recommendation',
+    ],
+    skills: ['Excel', 'SQL', 'Data analysis'],
+    level: 'Intermediate',
+    hours: 6,
+    reward: '₹4,000 + interview for the analyst role',
+    closes: '6 Nov',
+    submissions: 9,
+    fastTrack: true,
+  },
+  {
+    id: 'rasta-offline',
+    title: 'Show a bus route when the phone is offline',
+    company: 'Rasta',
+    brief:
+      'Half our users lose signal between stops. Build a small Android screen that caches a route and shows the last known bus position with an honest "last updated" time.',
+    deliverables: [
+      'A working Android project (Kotlin)',
+      'A 1–2 minute screen recording',
+      'A README with how you handled cache expiry',
+    ],
+    skills: ['Kotlin', 'Android'],
+    level: 'Advanced',
+    hours: 10,
+    reward: '₹8,000 + interview for the Android role',
+    closes: '12 Nov',
+    submissions: 6,
+    fastTrack: true,
+  },
+  {
+    id: 'nukkad-reel',
+    title: 'Write three reel scripts for a sweet shop',
+    company: 'Nukkad Ads',
+    brief:
+      'Sharma Mishthan Bhandar in Aminabad wants more young customers before Diwali. Write three reel scripts of under 30 seconds each that a shop owner can shoot on a phone.',
+    deliverables: [
+      'Three scripts in Hindi or Hinglish',
+      'Shot list for each script',
+      'One line on who each reel is for',
+    ],
+    skills: ['Writing', 'Marketing', 'Instagram'],
+    level: 'Beginner',
+    hours: 2,
+    reward: '₹1,500 + internship interview',
+    closes: '24 Oct',
+    submissions: 71,
+    fastTrack: false,
+  },
+]
