@@ -1,9 +1,9 @@
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import Layout from './components/Layout'
 import Home from './pages/Home'
 import Onboarding from './pages/Onboarding'
 import Login from './pages/Login'
-import Dashboard from './pages/Dashboard'
+import { MemberGate } from './panel/Gate'
 import Opportunities from './pages/Opportunities'
 import OpportunityDetail from './pages/OpportunityDetail'
 import Practice from './pages/Practice'
@@ -26,7 +26,8 @@ export default function App() {
         <Route index element={<Home />} />
         <Route path="start" element={<Onboarding />} />
         <Route path="login" element={<Login />} />
-        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="dashboard" element={<Navigate to="/panel" replace />} />
+        <Route path="panel/*" element={<MemberGate />} />
         <Route path="opportunities" element={<Opportunities />} />
         <Route path="opportunities/:id" element={<OpportunityDetail />} />
         <Route path="opportunities/:id/practice" element={<Practice />} />

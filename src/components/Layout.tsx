@@ -7,7 +7,9 @@ import MillisaPanel from '../millisa/MillisaPanel'
 const titles: Record<string, string> = {
   '': 'HackShift',
   start: 'Your profile',
-  dashboard: 'Dashboard',
+  login: 'Sign in',
+  panel: 'My panel',
+  admin: 'Admin panel',
   profile: 'Profile',
   opportunities: 'Opportunities',
   challenges: 'Challenges',
@@ -36,7 +38,7 @@ export default function Layout() {
       <main id="main">
         <Outlet />
       </main>
-      <Footer />
+      {!/^\/(panel|admin)(\/|$)/.test(pathname) && <Footer />}
       <MillisaPanel />
     </>
   )
