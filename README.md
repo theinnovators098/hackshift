@@ -8,7 +8,8 @@ Live site: https://theinnovators098.github.io/hackshift/
 
 ## The problem
 
-A student in Indore, a founder in Patna and a startup in Surat are all looking for each other, but they use different apps and none of those apps show what a person can actually do. Resumes look the same, good ideas stay in notebooks, and most opportunities stay inside a few big cities.
+A student that live 
+in Indore, a founder in Patna and a startup in Surat are all looking for each other, but they use different apps and none of those apps show what a person can actually do. Resumes look the same, good ideas stay in notebooks, and most opportunities stay inside a few big cities.
 
 ## What HackShift does it
 
