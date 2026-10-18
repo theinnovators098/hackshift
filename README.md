@@ -7,9 +7,6 @@ Built for Hack Shift, the national-level hackathon at IIIT Delhi, under the them
 Live site: https://theinnovators098.github.io/hackshift/
 
 ## The problem
-
-
-
 A student in Indore is looking for work, a founder in Patna needs a co-founder, and a startup in Surat is searching for skilled talent.but they use different apps and none of those apps show what a person can actually do. Resumes look the same, good ideas stay in notebooks, and most opportunities stay inside a few big cities.
 
 ## What HackShift does it
