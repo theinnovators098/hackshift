@@ -1,4 +1,4 @@
-# HackShift 2026
+# HackShift 2026 IIITD
 
 **Connecting talent, ideas and opportunities across India.**
 
