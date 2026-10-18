@@ -169,7 +169,7 @@ src/
 
 ## What is next
 
-- Real accounts, a database and server-side permissions
+- Real accounts, a database and server-side permissions.
 - A small server for Millisa so visitors do not need a key
 - College and institution portal for placement officers
 - Investor portal for startup discovery and founder introductions
