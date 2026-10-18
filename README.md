@@ -173,5 +173,5 @@ src/
 - A small server for Millisa so visitors do not need a key.
 - College and institution portal for placement officers.
 - Investor portal for startup discovery and founder introductions.
-- Hindi and regional languages across the whole interface, not only in Millisa
+- Hindi and regional languages across the whole interface, not only in Millisa.
 - Notifications on WhatsApp and email
