@@ -163,7 +163,7 @@ src/
 
 | Name | Focus |
 | --- | --- |
-| Abhishek | Team lead, design system, landing page, dashboard, deployment |
+| Abhishek | Team lead, design system, landing pages, dashboard, deployment |
 | Mridul | Opportunities, talent search, applications |
 | Aadya | Ventures, co-founder matching, schemes finder |
 | Muskan | Onboarding, mentors and booking, challenges, profile |
