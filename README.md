@@ -174,4 +174,4 @@ src/
 - College and institution portal for placement officers.
 - Investor portal for startup discovery and founder introductions.
 - Hindi and regional languages across the whole interface, not only in Millisa.
-- Notifications on WhatsApp and email
+- Notifications on WhatsApp and email.
