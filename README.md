@@ -1,4 +1,4 @@
-# HackShift
+# HackShift 2026
 
 **Connecting talent, ideas and opportunities across India.**
 
